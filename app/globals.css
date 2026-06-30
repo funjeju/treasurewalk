@@ -1,0 +1,228 @@
+@import 'tailwindcss';
+
+/* ─────────────────────────────────────────────────────────────
+   Design tokens (docs/05 §3). 색은 전부 변수 — 하드코딩 금지.
+   다크모드(next-themes attribute="data-theme") 와 직교.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  /* 브랜드 — 보물/황금 */
+  --tq-gold: #e8b23a;
+  --tq-gold-deep: #b97a2e;
+  --tq-gold-ink: #4a2e0c;
+  --tq-jewel: #1d9e75; /* 성공/발견 — 에메랄드 */
+  --tq-ruby: #d85a30; /* 강조/희소 */
+  --tq-sapphire: #378add; /* 정보/아바타 */
+
+  /* 표면 — 양피지 */
+  --tq-parchment: #faeeda;
+  --tq-parchment-2: #f3dcae;
+  --tq-fog: #c9c6bc;
+  --tq-surface: #ffffff;
+  --tq-surface-2: #fbf3e2;
+  --tq-ink: #2c2c2a;
+  --tq-ink-soft: #6b6a64;
+  --tq-border: #e9d6ae;
+
+  /* 의미색 — 근접 미터 램프 */
+  --tq-hot: #a32d2d;
+  --tq-warm: #ef9f27;
+  --tq-cool: #85b7eb;
+
+  --tq-radius: 14px;
+  --tq-radius-pill: 999px;
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --tq-parchment: #1c2230;
+  --tq-parchment-2: #222b3d;
+  --tq-fog: #2a3346;
+  --tq-surface: #161b26;
+  --tq-surface-2: #1e2533;
+  --tq-ink: #f2ede2;
+  --tq-ink-soft: #a8b0be;
+  --tq-border: #33405a;
+  --tq-gold: #f2c75a;
+  --tq-gold-ink: #fbf3e2;
+
+  color-scheme: dark;
+}
+
+/* Tailwind v4: 토큰을 유틸리티로 노출 (inline → 런타임 var 참조 유지) */
+@theme inline {
+  --color-gold: var(--tq-gold);
+  --color-gold-deep: var(--tq-gold-deep);
+  --color-gold-ink: var(--tq-gold-ink);
+  --color-jewel: var(--tq-jewel);
+  --color-ruby: var(--tq-ruby);
+  --color-sapphire: var(--tq-sapphire);
+  --color-parchment: var(--tq-parchment);
+  --color-parchment-2: var(--tq-parchment-2);
+  --color-fog: var(--tq-fog);
+  --color-surface: var(--tq-surface);
+  --color-surface-2: var(--tq-surface-2);
+  --color-ink: var(--tq-ink);
+  --color-ink-soft: var(--tq-ink-soft);
+  --color-border-tq: var(--tq-border);
+  --color-hot: var(--tq-hot);
+  --color-warm: var(--tq-warm);
+  --color-cool: var(--tq-cool);
+  --radius-tq: var(--tq-radius);
+  --radius-pill: var(--tq-radius-pill);
+}
+
+html,
+body {
+  background: var(--tq-parchment);
+  color: var(--tq-ink);
+  min-height: 100%;
+}
+
+body {
+  font-family:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 접근성: 포커스 가시 (docs/05 §10) */
+:focus-visible {
+  outline: 3px solid var(--tq-sapphire);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 탭 타깃 ≥ 44px floor */
+button,
+[role='button'],
+a {
+  touch-action: manipulation;
+}
+
+/* reduced-motion 존중 (docs/05 §10) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 2겹 입체 버튼 (docs/05 §5) */
+.tq-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--tq-radius);
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    filter 0.12s ease;
+}
+.tq-btn:active {
+  transform: scale(0.97);
+}
+.tq-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.tq-btn-primary {
+  background: var(--tq-gold);
+  color: var(--tq-gold-ink);
+  box-shadow: 0 4px 0 var(--tq-gold-deep);
+}
+.tq-btn-primary:active {
+  box-shadow: 0 2px 0 var(--tq-gold-deep);
+}
+.tq-btn-secondary {
+  background: var(--tq-surface);
+  color: var(--tq-ink);
+  box-shadow: 0 4px 0 var(--tq-border);
+}
+.tq-btn-secondary:active {
+  box-shadow: 0 2px 0 var(--tq-border);
+}
+.tq-btn-ghost {
+  background: transparent;
+  color: var(--tq-ink);
+  box-shadow: none;
+  min-height: 44px;
+}
+
+/* 청키 패널/카드 */
+.tq-panel {
+  background: var(--tq-surface);
+  border: 1px solid var(--tq-border);
+  border-radius: 18px;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.06);
+}
+
+.tq-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--tq-radius-pill);
+  background: var(--tq-surface-2);
+  border: 1px solid var(--tq-border);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tq-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--tq-radius);
+  border: 1px solid var(--tq-border);
+  background: var(--tq-surface);
+  color: var(--tq-ink);
+}
+.tq-input::placeholder {
+  color: var(--tq-ink-soft);
+}
+
+@keyframes tq-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.tq-pop {
+  animation: tq-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+@keyframes tq-float-up {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-48px);
+    opacity: 0;
+  }
+}
+.tq-float-up {
+  animation: tq-float-up 1.4s ease-out both;
+}

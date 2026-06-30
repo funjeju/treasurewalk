@@ -1,0 +1,21 @@
+rules_version = '2';
+
+// 이미지 업로드(힌트/인증서)는 가족 스코프 경로로 제한 (docs/07 §B)
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsFamily(fid) {
+      return signedIn() &&
+        firestore.get(/databases/(default)/documents/families/$(fid)).data.ownerUid == request.auth.uid;
+    }
+
+    match /families/{fid}/{allPaths=**} {
+      allow read, write: if ownsFamily(fid)
+        && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
