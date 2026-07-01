@@ -6,27 +6,19 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function ownsFamily(fid) {
-      return signedIn() &&
-        get(/databases/$(database)/documents/families/$(fid)).data.ownerUid == request.auth.uid;
-    }
-
     match /families/{fid} {
-      // 가족 문서: 소유자만. 최초 생성은 ownerUid==본인 + 아직 존재하지 않을 때 허용.
-      allow read, write: if ownsFamily(fid) ||
-        (signedIn() &&
-         request.resource.data.ownerUid == request.auth.uid &&
-         !exists(/databases/$(database)/documents/families/$(fid)));
+      // 최상위 가족 문서: resource.data 직접 참조 →
+      // 컬렉션 쿼리(where ownerUid == uid, list)도 규칙 증명 가능 (get() 방식은 쿼리에서 거부됨).
+      allow read: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
 
-      // 하위 모든 문서: 가족 소유자만 (docs/03 §4, docs/07 §B 가족 격리)
+      // 하위 모든 문서(children/treasures/claims/activity): 부모 가족 소유자만 (가족 격리).
+      // get(parent) 는 쿼리 전체에 대한 상수 검사이므로 list/get 모두 허용됨.
       match /{document=**} {
-        allow read, write: if ownsFamily(fid);
+        allow read, write: if signedIn() &&
+          get(/databases/$(database)/documents/families/$(fid)).data.ownerUid == request.auth.uid;
       }
-    }
-
-    // collectionGroup('claims') 쿼리: claim 문서에 familyId 필드를 두고 소유 검증.
-    match /{path=**}/claims/{claimId} {
-      allow read: if signedIn() && ownsFamily(resource.data.familyId);
     }
   }
 }
