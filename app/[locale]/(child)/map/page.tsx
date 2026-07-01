@@ -114,9 +114,9 @@ export default function ChildMapPage() {
   // 자녀 미선택
   if (!child) {
     return (
-      <div className="tq-panel p-6 text-center">
-        <p className="mb-3">{tc('loading')}</p>
-        <Link href="/dashboard" className="tq-btn tq-btn-secondary">
+      <div className="glass p-6 text-center">
+        <p className="mb-3 text-[var(--g-dim)]">{tc('loading')}</p>
+        <Link href="/dashboard" className="g-btn g-btn-glass">
           {tn('dashboard')}
         </Link>
       </div>
@@ -127,22 +127,16 @@ export default function ChildMapPage() {
 
   return (
     <div className="space-y-3">
-      {/* 탐험가 + HUD */}
+      {/* 탐험가 선택 + HUD */}
       <div className="flex items-center justify-between gap-2">
         <ChildSwitcher />
-        <span className="text-sm font-extrabold text-[var(--tq-gold-deep)]">
-          {child.displayName}
-        </span>
       </div>
       <Hud child={child} steps={steps} />
 
       {/* 위치 사용 중 인디케이터 (docs/07 A.2-1) */}
       {locationEnabled && (
-        <div
-          className="flex items-center gap-2 rounded-[var(--tq-radius-pill)] border border-[var(--tq-border)] px-3 py-2 text-sm font-extrabold text-[var(--tq-jewel)]"
-          style={{ background: 'color-mix(in srgb, var(--tq-jewel) 15%, var(--tq-surface))' }}
-        >
-          <span className="tq-pulse inline-block h-2.5 w-2.5 rounded-full bg-[var(--tq-jewel)]" />
+        <div className="flex items-center gap-2 rounded-full border border-[var(--g-line)] bg-[rgba(55,213,154,0.14)] px-3 py-2 text-sm font-extrabold text-[var(--g-green)]">
+          <span className="tq-pulse inline-block h-2.5 w-2.5 rounded-full bg-[var(--g-green)]" />
           {t('locationActive')}
         </div>
       )}
@@ -165,14 +159,10 @@ export default function ChildMapPage() {
 
       {/* 위치 OFF 안내 */}
       {!locationEnabled && (
-        <div className="tq-panel p-5 text-center">
-          <p className="text-lg font-bold">🔒 {t('locationOff')}</p>
-          <p className="mt-1 text-[var(--tq-ink-soft)]">{t('locationOffHint')}</p>
-          <button
-            type="button"
-            className="tq-btn tq-btn-primary mt-4"
-            onClick={enableLocation}
-          >
+        <div className="glass p-5 text-center">
+          <p className="text-lg font-extrabold">🔒 {t('locationOff')}</p>
+          <p className="mt-1 text-[var(--g-dim)]">{t('locationOffHint')}</p>
+          <button type="button" className="g-btn g-btn-gold mt-4" onClick={enableLocation}>
             🧭 {t('enableLocation')}
           </button>
         </div>
@@ -180,12 +170,12 @@ export default function ChildMapPage() {
 
       {/* 권한 거부/미지원 */}
       {locationEnabled && status === 'denied' && (
-        <p className="rounded-[14px] bg-[var(--tq-ruby)]/15 p-3 text-sm font-semibold text-[var(--tq-ruby)]">
+        <p className="rounded-[14px] border border-[var(--g-line)] bg-[rgba(255,106,95,0.14)] p-3 text-sm font-bold text-[var(--g-red)]">
           {t('locationDenied')}
         </p>
       )}
       {locationEnabled && status === 'unsupported' && (
-        <p className="rounded-[14px] bg-[var(--tq-ruby)]/15 p-3 text-sm font-semibold text-[var(--tq-ruby)]">
+        <p className="rounded-[14px] border border-[var(--g-line)] bg-[rgba(255,106,95,0.14)] p-3 text-sm font-bold text-[var(--g-red)]">
           {t('locationUnsupported')}
         </p>
       )}
@@ -196,7 +186,7 @@ export default function ChildMapPage() {
       )}
 
       {locationEnabled && treasures.length === 0 && (
-        <p className="text-center text-[var(--tq-ink-soft)]">{t('noTreasures')}</p>
+        <p className="py-4 text-center text-[var(--g-dim)]">{t('noTreasures')}</p>
       )}
     </div>
   );

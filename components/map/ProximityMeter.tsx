@@ -33,12 +33,12 @@ export function ProximityMeter({ distanceM }: { distanceM: number }) {
             : t('freezing');
 
   return (
-    <div className="tq-panel p-3" role="meter" aria-label={t('label')} aria-valuenow={Math.round(h * 100)} aria-valuemin={0} aria-valuemax={100}>
+    <div className="glass p-3" role="meter" aria-label={t('label')} aria-valuenow={Math.round(h * 100)} aria-valuemin={0} aria-valuemax={100}>
       <div className="mb-2 flex items-baseline justify-between">
-        <span className="font-extrabold" style={{ color: RAMP[active] }}>
+        <span className="text-lg font-black" style={{ color: RAMP[active] }}>
           {label}
         </span>
-        <span className="tq-pill text-sm">
+        <span className="g-chip g-chip-gold text-sm">
           {distanceM < 1000
             ? `${Math.round(distanceM)}m`
             : `${(distanceM / 1000).toFixed(1)}km`}
@@ -50,8 +50,9 @@ export function ProximityMeter({ distanceM }: { distanceM: number }) {
             key={i}
             className="h-3 flex-1 rounded-full transition-all"
             style={{
-              background: i <= active ? RAMP[i] : 'var(--tq-fog)',
+              background: i <= active ? RAMP[i] : 'rgba(255,255,255,0.12)',
               transform: i === active ? 'scaleY(1.5)' : undefined,
+              boxShadow: i <= active ? `0 0 8px ${RAMP[i]}` : undefined,
             }}
           />
         ))}

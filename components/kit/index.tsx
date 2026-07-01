@@ -156,13 +156,7 @@ export function Segmented<T extends string>({
   );
 }
 
-const RARITY_COLOR = {
-  common: 'var(--g-common)',
-  rare: 'var(--g-rare)',
-  epic: 'var(--g-epic)',
-  legend: 'var(--g-legend)',
-} as const;
-export type Rarity = keyof typeof RARITY_COLOR;
+export type Rarity = 'common' | 'rare' | 'epic' | 'legend';
 
 export function Stars({ value, max = 3 }: { value: number; max?: number }) {
   return (

@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/lib/i18n/navigation';
 
-/** 아이 모드 하단 게임 내비게이션 — 지도 / 도감 / 부모 모드(홈). */
+/** 아이 모드 하단 게임 탭바 (키트 스타일). */
 export function BottomNav() {
   const t = useTranslations('nav');
   const pathname = usePathname();
@@ -15,18 +15,18 @@ export function BottomNav() {
   ] as const;
 
   return (
-    <nav className="tq-bottom-nav" aria-label={t('map')}>
+    <nav className="glass g-tabbar fixed bottom-3 left-1/2 z-40 w-[min(94%,24rem)] -translate-x-1/2">
       {items.map((it) => {
         const active = pathname === it.href || pathname.startsWith(it.href + '/');
         return (
           <Link
             key={it.href}
             href={it.href}
-            className="tq-nav-item"
+            className="g-tab"
             data-active={active}
             aria-current={active ? 'page' : undefined}
           >
-            <span className="tq-nav-ico" aria-hidden>
+            <span className="g-tab-ico" aria-hidden>
               {it.ico}
             </span>
             {it.label}

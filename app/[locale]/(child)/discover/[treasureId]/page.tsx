@@ -132,7 +132,7 @@ export default function DiscoverPage({
                 amount: `${format.number(treasure.reward.amount)}${tc('krw')}`,
               })}
             </p>
-            <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-[var(--tq-surface-2)] px-3 py-1 font-bold text-[var(--tq-gold-deep)]">
+            <p className="g-chip g-chip-gold mt-1 text-sm">
               🪙 {t('coinsEarned', { coins: COIN_PER_FIND })}
             </p>
 
@@ -140,18 +140,16 @@ export default function DiscoverPage({
               {!requested ? (
                 <button
                   type="button"
-                  className="tq-btn tq-btn-primary"
+                  className="g-btn g-btn-gold"
                   onClick={handleRequest}
                   disabled={requesting || !claim}
                 >
                   {requesting ? t('requesting') : `🧾 ${t('requestAllowance')}`}
                 </button>
               ) : (
-                <p className="font-bold text-[var(--tq-jewel)]">
-                  ✓ {t('requested')}
-                </p>
+                <p className="font-extrabold text-[var(--g-green)]">✓ {t('requested')}</p>
               )}
-              <Link href="/map" className="tq-btn tq-btn-secondary">
+              <Link href="/map" className="g-btn g-btn-glass">
                 {t('backToMap')}
               </Link>
             </div>

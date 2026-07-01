@@ -36,7 +36,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body>
+      <body className="game-root">
         <ThemeProvider>
           <NextIntlClientProvider>
             <AuthProvider>{children}</AuthProvider>

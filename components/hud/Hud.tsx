@@ -2,63 +2,37 @@
 
 import { useTranslations } from 'next-intl';
 import type { Child } from '@/lib/types';
-import { levelProgress } from '@/lib/gamification/levels';
+import { levelProgress, levelFromXp, xpForLevel } from '@/lib/gamification/levels';
+import { GlassCard, Avatar, Progress, Stat } from '@/components/kit';
 
-/** 코인·레벨·스트릭·걸음 pill 묶음 (docs/05 §5). */
+/** 게임 HUD (키트) — 아바타·레벨·XP바 + 코인/스트릭/걸음 (docs/05 §5). */
 export function Hud({ child, steps }: { child: Child; steps: number }) {
   const t = useTranslations('common');
   const progress = levelProgress(child.xp);
+  const level = levelFromXp(child.xp);
+  const nextXp = xpForLevel(level);
 
   return (
-    <div className="tq-hud-bar">
-      <span className="tq-stat" title={t('level')}>
-        <span className="tq-stat-ico tq-ico-level" aria-hidden>
-          ⭐
-        </span>
-        <span className="flex flex-col leading-tight">
-          <span className="text-[0.65rem] font-bold text-[var(--tq-ink-soft)]">
-            {t('level')}
-          </span>
-          <span className="flex items-center gap-1">
-            {child.level}
-            <span
-              className="h-1.5 w-9 overflow-hidden rounded-full bg-[var(--tq-fog)]"
-              aria-hidden
-            >
-              <span
-                className="block h-full rounded-full bg-[var(--tq-gold)]"
-                style={{ width: `${Math.round(progress * 100)}%` }}
-              />
+    <GlassCard className="p-3">
+      <div className="flex items-center gap-3">
+        <Avatar size={46} level={child.level}>
+          🧭
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-extrabold">{child.displayName}</p>
+          <div className="mt-1 flex items-center gap-2">
+            <Progress value={progress} className="flex-1" />
+            <span className="shrink-0 text-[0.65rem] text-[var(--g-dim)]">
+              {child.xp.toLocaleString()}/{nextXp.toLocaleString()}
             </span>
-          </span>
-        </span>
-      </span>
-
-      <span className="tq-stat" title={t('coin')}>
-        <span className="tq-stat-ico tq-ico-coin" aria-hidden>
-          🪙
-        </span>
-        {child.coins.toLocaleString()}
-      </span>
-
-      <span className="tq-stat" title={t('streak')}>
-        <span className="tq-stat-ico tq-ico-streak" aria-hidden>
-          🔥
-        </span>
-        {child.streakDays}
-      </span>
-
-      <span className="tq-stat" title={t('steps')}>
-        <span className="tq-stat-ico tq-ico-steps" aria-hidden>
-          👟
-        </span>
-        <span className="flex flex-col leading-tight">
-          <span className="text-[0.65rem] font-bold text-[var(--tq-ink-soft)]">
-            {t('steps')}
-          </span>
-          {steps.toLocaleString()}
-        </span>
-      </span>
-    </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Stat variant="gold" icon="🪙" value={child.coins.toLocaleString()} />
+        <Stat variant="streak" icon="🔥" label={t('streak')} value={child.streakDays} />
+        <Stat variant="steps" icon="👟" label={t('steps')} value={steps.toLocaleString()} />
+      </div>
+    </GlassCard>
   );
 }
