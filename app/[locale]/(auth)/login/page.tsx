@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { LocaleSwitcher } from '@/components/i18n/LocaleSwitcher';
 
 export default function LoginPage() {
@@ -37,7 +36,6 @@ export default function LoginPage() {
     <main className="grid min-h-screen place-items-center p-4">
       <div className="absolute right-4 top-4 flex items-center gap-2">
         <LocaleSwitcher />
-        <ThemeToggle />
       </div>
 
       <div className="tq-panel w-full max-w-md p-8 text-center tq-pop">

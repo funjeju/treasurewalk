@@ -13,12 +13,19 @@ export interface GeoPoint {
   lng: number;
 }
 
+export interface StepGoal {
+  steps: number;
+  amount: number; // KRW
+}
+
 /** families/{familyId} */
 export interface Family {
   id: string;
   ownerUid: string;
   name: string;
   locale: string;
+  /** 걸음 목표별 용돈 (부모 설정). 없으면 기본값. */
+  stepGoals?: StepGoal[];
   createdAt: number;
   updatedAt: number;
 }

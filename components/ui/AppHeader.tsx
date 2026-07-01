@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/lib/i18n/navigation';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { LocaleSwitcher } from '@/components/i18n/LocaleSwitcher';
 import { useAuth } from '@/components/auth/AuthProvider';
 
@@ -26,7 +25,6 @@ export function AppHeader() {
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <LocaleSwitcher />
-          <ThemeToggle />
           {user && (
             <button
               type="button"

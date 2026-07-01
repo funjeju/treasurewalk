@@ -34,6 +34,19 @@
     "light": "Light",
     "dark": "Dark"
   },
+  "hud": {
+    "nextGoal": "Next {steps}",
+    "maxGoal": "Top goal reached!",
+    "startCounter": "Start step counter",
+    "counting": "Counting steps",
+    "permissionDenied": "Motion sensor permission needed. Please allow it in your browser settings.",
+    "stepGoalsTitle": "Step goal rewards",
+    "stepGoalsDesc": "Set a different allowance for each step goal.",
+    "goalSteps": "Steps",
+    "goalAmount": "Allowance",
+    "requestStepReward": "Request step allowance",
+    "stepRewardRequested": "Step allowance requested"
+  },
   "auth": {
     "loginTitle": "Log in to start exploring",
     "loginSubtitle": "Create a family treasure hunt with a parent (guardian) account.",

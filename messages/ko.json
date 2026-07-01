@@ -34,6 +34,19 @@
     "light": "라이트",
     "dark": "다크"
   },
+  "hud": {
+    "nextGoal": "다음 {steps}보",
+    "maxGoal": "최고 목표 달성!",
+    "startCounter": "걸음 측정 시작",
+    "counting": "걸음 측정 중",
+    "permissionDenied": "동작 센서 권한이 필요해요. 브라우저 설정에서 허용해 주세요.",
+    "stepGoalsTitle": "걸음 목표 보상",
+    "stepGoalsDesc": "목표 걸음 수마다 다른 용돈을 설정하세요.",
+    "goalSteps": "걸음",
+    "goalAmount": "용돈",
+    "requestStepReward": "걸음 용돈 요청",
+    "stepRewardRequested": "걸음 용돈 요청됨"
+  },
   "auth": {
     "loginTitle": "탐험을 시작하려면 로그인하세요",
     "loginSubtitle": "부모(법정대리인) 계정으로 가족 보물찾기를 만드세요.",

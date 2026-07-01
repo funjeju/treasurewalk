@@ -32,9 +32,21 @@ export async function getFamilyForOwner(uid: string): Promise<Family | null> {
     ownerUid: data.ownerUid,
     name: data.name,
     locale: data.locale,
+    stepGoals: data.stepGoals ?? undefined,
     createdAt: millis(data.createdAt),
     updatedAt: millis(data.updatedAt),
   };
+}
+
+/** 걸음 목표 보상 설정 (부모). */
+export async function updateStepGoals(
+  familyId: string,
+  stepGoals: { steps: number; amount: number }[],
+): Promise<void> {
+  await updateDoc(doc(db, 'families', familyId), {
+    stepGoals,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 /** 최초 로그인 시 가족 생성. */

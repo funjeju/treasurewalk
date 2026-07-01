@@ -43,8 +43,8 @@ export function useStepCounter(childId: string | null) {
       if (!a) return;
       const mag = Math.sqrt((a.x ?? 0) ** 2 + (a.y ?? 0) ** 2 + (a.z ?? 0) ** 2);
       const now = Date.now();
-      // 피크 임계 + 디바운스(>300ms) — 흔들기 노이즈 억제
-      if (mag - lastMag.current > 3.2 && now - lastPeak.current > 300) {
+      // 피크 임계 + 디바운스 — 흔들기 노이즈 억제, 걸음 감지
+      if (mag - lastMag.current > 2.6 && now - lastPeak.current > 260) {
         lastPeak.current = now;
         setSteps((s) => {
           const n = s + 1;

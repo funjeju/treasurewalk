@@ -38,7 +38,12 @@ export default function ChildMapPage() {
   const locationEnabled = child?.locationEnabled ?? false;
 
   const { position, status } = useGeolocation(locationEnabled);
-  const { steps, start: startSteps } = useStepCounter(child?.id ?? null);
+  const {
+    steps,
+    active: stepsActive,
+    needsPermission,
+    start: startSteps,
+  } = useStepCounter(child?.id ?? null);
   const triggered = useRef<Set<string>>(new Set());
   const lastVibrate = useRef(0);
   // 기본 뷰는 제주도 전체. 내 위치 확대는 사용자가 📍 버튼으로.
@@ -131,7 +136,14 @@ export default function ChildMapPage() {
       <div className="flex items-center justify-between gap-2">
         <ChildSwitcher />
       </div>
-      <Hud child={child} steps={steps} />
+      <Hud
+        child={child}
+        steps={steps}
+        goals={family?.stepGoals}
+        stepsActive={stepsActive}
+        needsPermission={needsPermission}
+        onStartSteps={startSteps}
+      />
 
       {/* 위치 사용 중 인디케이터 (docs/07 A.2-1) */}
       {locationEnabled && (

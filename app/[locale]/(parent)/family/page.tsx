@@ -4,16 +4,38 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Onboarding } from '@/components/onboarding/Onboarding';
-import { updateChild } from '@/lib/firebase/families';
+import { updateChild, updateStepGoals } from '@/lib/firebase/families';
 import { listActivity } from '@/lib/firebase/activity';
-import type { ActivityEvent } from '@/lib/types';
+import { normalizeGoals } from '@/lib/gamification/steps';
+import type { ActivityEvent, StepGoal } from '@/lib/types';
 
 export default function FamilyPage() {
   const t = useTranslations('family');
   const tc = useTranslations('common');
   const { family, children, refreshFamily, loading } = useAuth();
+  const th = useTranslations('hud');
   const [feed, setFeed] = useState<ActivityEvent[]>([]);
   const [saving, setSaving] = useState<string | null>(null);
+  const [goals, setGoals] = useState<StepGoal[]>([]);
+  const [goalsSaving, setGoalsSaving] = useState(false);
+
+  useEffect(() => {
+    if (family) setGoals(normalizeGoals(family.stepGoals));
+  }, [family]);
+
+  async function saveGoals() {
+    if (!family) return;
+    setGoalsSaving(true);
+    try {
+      await updateStepGoals(family.id, normalizeGoals(goals));
+      await refreshFamily();
+    } finally {
+      setGoalsSaving(false);
+    }
+  }
+  function setGoal(i: number, key: 'steps' | 'amount', v: number) {
+    setGoals((gs) => gs.map((g, idx) => (idx === i ? { ...g, [key]: v } : g)));
+  }
 
   const childName = (id: string) =>
     children.find((c) => c.id === id)?.displayName ?? '—';
@@ -110,6 +132,49 @@ export default function FamilyPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* 걸음 목표 보상 */}
+      <section className="tq-panel p-5">
+        <h2 className="text-lg font-bold">👟 {th('stepGoalsTitle')}</h2>
+        <p className="mb-3 mt-1 text-sm text-[var(--tq-ink-soft)]">{th('stepGoalsDesc')}</p>
+        <div className="space-y-2">
+          <div className="flex gap-2 text-xs font-bold text-[var(--tq-ink-soft)]">
+            <span className="flex-1">{th('goalSteps')}</span>
+            <span className="flex-1">{th('goalAmount')} ({tc('krw')})</span>
+          </div>
+          {goals.map((g, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                step={1000}
+                value={g.steps}
+                onChange={(e) => setGoal(i, 'steps', Number(e.target.value))}
+                className="tq-input flex-1"
+                aria-label={`${th('goalSteps')} ${i + 1}`}
+              />
+              <span className="text-[var(--tq-ink-soft)]">→</span>
+              <input
+                type="number"
+                min={0}
+                step={100}
+                value={g.amount}
+                onChange={(e) => setGoal(i, 'amount', Number(e.target.value))}
+                className="tq-input flex-1"
+                aria-label={`${th('goalAmount')} ${i + 1}`}
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="tq-btn tq-btn-primary mt-3"
+          onClick={saveGoals}
+          disabled={goalsSaving}
+        >
+          {tc('save')}
+        </button>
       </section>
 
       {/* 가족 피드 (CD5) */}
