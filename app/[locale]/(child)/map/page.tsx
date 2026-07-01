@@ -11,6 +11,7 @@ import { StepMilestone, type Milestone } from '@/components/hud/StepMilestone';
 import { ChildSwitcher } from '@/components/child/ChildSwitcher';
 import { stepStatus } from '@/lib/gamification/steps';
 import { useGeolocation } from '@/lib/hooks/useGeolocation';
+import { useStepCounter } from '@/lib/hooks/useStepCounter';
 import { useRouteTracker } from '@/lib/hooks/useRouteTracker';
 import { listActiveTreasures } from '@/lib/firebase/treasures';
 import { updateChild } from '@/lib/firebase/families';
@@ -40,8 +41,15 @@ export default function ChildMapPage() {
   const locationEnabled = child?.locationEnabled ?? false;
 
   const { position, status } = useGeolocation(locationEnabled);
-  // GPS 거리·동선 트래커 (흔들기 무관)
-  const { distanceM: todayDistance, path } = useRouteTracker(
+  // 걸음수(가속도) — HUD/보상 기준
+  const {
+    steps,
+    active: stepsActive,
+    needsPermission,
+    start: startSteps,
+  } = useStepCounter(child?.id ?? null);
+  // GPS 동선 — 지도에 경로 표시 + 일자별 기록 (보상엔 미사용)
+  const { path } = useRouteTracker(
     family?.id ?? null,
     child?.id ?? null,
     position,
@@ -52,11 +60,11 @@ export default function ChildMapPage() {
   // 기본 뷰는 제주도 전체. 내 위치 확대는 사용자가 📍 버튼으로.
   const [recenter, setRecenter] = useState<GeoPoint | null>(null);
 
-  // 거리 목표 달성 축하 팝업
+  // 걸음 목표 달성 축하 팝업
   const [milestone, setMilestone] = useState<Milestone | null>(null);
   const lastReached = useRef(-1);
   useEffect(() => {
-    const st = stepStatus(todayDistance, family?.stepGoals);
+    const st = stepStatus(steps, family?.stepGoals);
     if (lastReached.current < 0) {
       lastReached.current = st.reachedIndex; // 최초 로드 시 기준만 잡고 팝업 X
       return;
@@ -64,9 +72,9 @@ export default function ChildMapPage() {
     if (st.reachedIndex > lastReached.current) {
       const g = st.goals[st.reachedIndex];
       lastReached.current = st.reachedIndex;
-      setMilestone({ distanceM: g.steps, amount: g.amount });
+      setMilestone({ steps: g.steps, amount: g.amount });
     }
-  }, [todayDistance, family?.stepGoals]);
+  }, [steps, family?.stepGoals]);
 
   // active 보물 로드
   const loadTreasures = useCallback(async () => {
@@ -102,7 +110,7 @@ export default function ChildMapPage() {
         triggered.current.add(tr.id);
         // 강한 햅틱
         navigator.vibrate?.([60, 30, 120]);
-        createFoundClaim(family.id, tr, child, position, Math.round(todayDistance))
+        createFoundClaim(family.id, tr, child, position, steps)
           .then(() => {
             router.push(`/discover/${tr.id}`);
           })
@@ -113,7 +121,7 @@ export default function ChildMapPage() {
         break;
       }
     }
-  }, [position, treasures, family, child, todayDistance, router]);
+  }, [position, treasures, family, child, steps, router]);
 
   // 근접 햅틱 (가까울수록 자주)
   useEffect(() => {
@@ -131,6 +139,7 @@ export default function ChildMapPage() {
   async function enableLocation() {
     if (!family || !child) return;
     await updateChild(family.id, child.id, { locationEnabled: true });
+    await startSteps(); // 사용자 제스처에서 만보기 권한 요청
     await refreshFamily();
   }
 
@@ -159,7 +168,14 @@ export default function ChildMapPage() {
           🗺️ {tn('routes')}
         </Link>
       </div>
-      <Hud child={child} distanceM={todayDistance} goals={family?.stepGoals} />
+      <Hud
+        child={child}
+        steps={steps}
+        goals={family?.stepGoals}
+        stepsActive={stepsActive}
+        needsPermission={needsPermission}
+        onStartSteps={startSteps}
+      />
 
       {/* 위치 사용 중 인디케이터 (docs/07 A.2-1) */}
       {locationEnabled && (

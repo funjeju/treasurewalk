@@ -37,13 +37,15 @@
     "dark": "다크"
   },
   "hud": {
-    "todayDistance": "오늘 이동",
-    "nextReward": "다음 {dist} · +{amount}원",
+    "nextReward": "다음 {steps}보 · +{amount}원",
     "maxGoal": "최고 목표 달성!",
-    "goalReached": "{dist} 이동 달성!",
-    "stepGoalsTitle": "거리 목표 보상",
-    "stepGoalsDesc": "목표 이동거리(m)마다 다른 용돈을 설정하세요.",
-    "goalSteps": "거리(m)",
+    "goalReached": "{steps}걸음 달성!",
+    "startCounter": "걸음 측정 시작",
+    "counting": "걸음 측정 중",
+    "permissionDenied": "동작 센서 권한이 필요해요. 브라우저 설정에서 허용해 주세요.",
+    "stepGoalsTitle": "걸음 목표 보상",
+    "stepGoalsDesc": "목표 걸음 수마다 다른 용돈을 설정하세요.",
+    "goalSteps": "걸음",
     "goalAmount": "용돈"
   },
   "auth": {
@@ -178,8 +180,8 @@
     "title": "용돈 지갑",
     "total": "받을 용돈",
     "fromTreasures": "발견한 보물",
-    "fromSteps": "거리 목표",
-    "stepsLine": "{steps} 이동",
+    "fromSteps": "걸음 목표",
+    "stepsLine": "{steps} 걸음 달성",
     "request": "용돈 주세요",
     "requesting": "요청 중…",
     "requested": "용돈을 요청했어요! 부모님 확인을 기다려요.",

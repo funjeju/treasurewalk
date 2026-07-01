@@ -3,10 +3,9 @@
 import { useEffect } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Icon } from '@/components/kit';
-import { formatDistanceM } from '@/lib/geo/format';
 
 export interface Milestone {
-  distanceM: number;
+  steps: number;
   amount: number;
 }
 
@@ -47,7 +46,7 @@ export function StepMilestone({
         ))}
         <div className="text-5xl">🎉</div>
         <p className="mt-2 text-xl font-black">
-          {th('goalReached', { dist: formatDistanceM(milestone.distanceM) })}
+          {th('goalReached', { steps: format.number(milestone.steps) })}
         </p>
         <p className="tq-amount mt-1 text-3xl">
           <Icon name="coin" size={22} /> +{format.number(milestone.amount)}

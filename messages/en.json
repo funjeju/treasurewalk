@@ -37,13 +37,15 @@
     "dark": "Dark"
   },
   "hud": {
-    "todayDistance": "today",
-    "nextReward": "Next {dist} · +{amount}",
+    "nextReward": "Next {steps} · +{amount}",
     "maxGoal": "Top goal reached!",
-    "goalReached": "{dist} walked!",
-    "stepGoalsTitle": "Distance goal rewards",
-    "stepGoalsDesc": "Set a different allowance for each distance goal (m).",
-    "goalSteps": "Distance (m)",
+    "goalReached": "{steps} steps reached!",
+    "startCounter": "Start step counter",
+    "counting": "Counting steps",
+    "permissionDenied": "Motion sensor permission needed. Please allow it in your browser settings.",
+    "stepGoalsTitle": "Step goal rewards",
+    "stepGoalsDesc": "Set a different allowance for each step goal.",
+    "goalSteps": "Steps",
     "goalAmount": "Allowance"
   },
   "auth": {
@@ -178,8 +180,8 @@
     "title": "Allowance wallet",
     "total": "Allowance to receive",
     "fromTreasures": "Found treasures",
-    "fromSteps": "Distance goals",
-    "stepsLine": "{steps} walked",
+    "fromSteps": "Step goals",
+    "stepsLine": "{steps} steps reached",
     "request": "Ask for allowance",
     "requesting": "Requesting…",
     "requested": "Allowance requested! Waiting for your parent.",
