@@ -18,7 +18,9 @@ import { isInside } from '@/lib/geo/geofence';
 import { heat, hapticPattern } from '@/lib/geo/proximity';
 import type { GeoPoint, Treasure } from '@/lib/types';
 
-const DEFAULT_CENTER: GeoPoint = { lat: 37.5665, lng: 126.978 };
+// 기본 뷰 — 제주도 전체 (내 위치 버튼으로 확대)
+const JEJU_CENTER: GeoPoint = { lat: 33.3846, lng: 126.5535 };
+const JEJU_ZOOM = 10;
 
 export default function ChildMapPage() {
   const t = useTranslations('map');
@@ -39,16 +41,8 @@ export default function ChildMapPage() {
   const { steps, start: startSteps } = useStepCounter(child?.id ?? null);
   const triggered = useRef<Set<string>>(new Set());
   const lastVibrate = useRef(0);
+  // 기본 뷰는 제주도 전체. 내 위치 확대는 사용자가 📍 버튼으로.
   const [recenter, setRecenter] = useState<GeoPoint | null>(null);
-  const didCenter = useRef(false);
-
-  // 위치 최초 수신 시 한 번 카메라를 내 위치로
-  useEffect(() => {
-    if (position && !didCenter.current) {
-      didCenter.current = true;
-      setRecenter({ ...position });
-    }
-  }, [position]);
 
   // active 보물 로드
   const loadTreasures = useCallback(async () => {
@@ -129,7 +123,7 @@ export default function ChildMapPage() {
     );
   }
 
-  const mapCenter = position ?? nearest?.t.location ?? DEFAULT_CENTER;
+  const mapCenter = JEJU_CENTER; // 기본은 제주도 전체
 
   return (
     <div className="space-y-3">
@@ -158,7 +152,7 @@ export default function ChildMapPage() {
         <div className="h-[55vh] w-full">
           <GameMapDynamic
             center={mapCenter}
-            zoom={16}
+            zoom={JEJU_ZOOM}
             recenter={recenter}
             treasures={treasures}
             userLocation={position}

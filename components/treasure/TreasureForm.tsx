@@ -12,7 +12,7 @@ import {
 } from '@/lib/firebase/treasures';
 import type { GeoPoint, Treasure } from '@/lib/types';
 
-const DEFAULT_CENTER: GeoPoint = { lat: 37.5665, lng: 126.978 }; // 서울 시청 fallback
+const DEFAULT_CENTER: GeoPoint = { lat: 33.3846, lng: 126.5535 }; // 제주 (위치 거부 시 fallback)
 
 /** 보물 생성/수정 공용 폼. edit=Treasure 이면 수정 모드. */
 export function TreasureForm({ edit }: { edit?: Treasure }) {

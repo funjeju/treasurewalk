@@ -360,32 +360,46 @@ a {
   text-shadow: 0 0 18px color-mix(in srgb, var(--tq-gold) 55%, transparent);
 }
 
-/* ── 지도 마커 ──────────────────────────────────────────── */
+/* ── 지도 마커 — 똑바로 선 원형 배지 + 아래 삼각 포인터 ── */
 .tq-pin {
   position: relative;
   display: block;
-  filter: drop-shadow(0 4px 4px rgb(44 30 8 / 0.35));
+  width: 40px;
+  height: 48px; /* 배지 40 + 포인터 8 */
+  filter: drop-shadow(0 3px 3px rgb(44 30 8 / 0.35));
 }
 .tq-pin-badge {
   display: grid;
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 50% 50% 50% 4px;
-  transform: rotate(45deg);
-  font-size: 1.15rem;
+  border-radius: 50%;
+  font-size: 1.2rem;
   border: 2px solid #fff;
   background: linear-gradient(180deg, #ffe08a, var(--tq-gold) 55%, var(--tq-gold-deep));
   box-shadow: inset 0 2px 3px rgb(255 255 255 / 0.6);
 }
-.tq-pin-badge > * {
-  transform: rotate(-45deg);
+/* 아래를 가리키는 삼각 꼬리 */
+.tq-pin::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 10px solid var(--tq-gold-deep);
 }
 .tq-pin[data-found='true'] .tq-pin-badge {
   background: linear-gradient(180deg, #a9ecce, var(--tq-jewel) 55%, #14684d);
 }
+.tq-pin[data-found='true']::after {
+  border-top-color: #14684d;
+}
 .tq-pin:hover {
-  filter: drop-shadow(0 6px 6px rgb(44 30 8 / 0.4)) brightness(1.05);
+  filter: drop-shadow(0 5px 5px rgb(44 30 8 / 0.4)) brightness(1.05);
 }
 
 /* 내 위치 점 */
