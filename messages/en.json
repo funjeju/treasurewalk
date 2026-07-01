@@ -53,8 +53,14 @@
     "loginSubtitle": "Create a family treasure hunt with a parent (guardian) account.",
     "googleLogin": "Continue with Google",
     "signingIn": "Signing in…",
-    "guardianOnly": "The account owner is the parent (guardian). Kids join as profiles inside the family.",
-    "loginFailed": "Login failed. Please try again."
+    "guardianOnly": "The account owner is the parent (guardian). Kids join with a code.",
+    "loginFailed": "Login failed. Please try again.",
+    "parentTab": "Parent",
+    "childTab": "Kid",
+    "childLoginTitle": "Enter your code",
+    "childLoginSubtitle": "Type the 6-character code your parent gave you.",
+    "childLoginBtn": "Start exploring",
+    "codeInvalid": "That code isn't right. Please check with your parent."
   },
   "onboarding": {
     "createFamilyTitle": "Create your family",
@@ -226,6 +232,11 @@
     "locationOnDesc": "Use location while exploring. Off by default.",
     "consentOk": "Guardian consent on file",
     "consentMissing": "Consent needed",
+    "joinCode": "Join code",
+    "joinCodeNone": "None yet",
+    "joinCodeIssue": "Issue code",
+    "joinCodeRegen": "New code",
+    "joinCodeHint": "On the kid's device: login → Kid → enter this code to sign in to kid mode.",
     "feed": "Family feed",
     "feedFound": "{name} found a treasure!",
     "feedPaid": "{name} allowance paid",

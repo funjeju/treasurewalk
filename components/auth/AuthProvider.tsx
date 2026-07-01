@@ -16,12 +16,19 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase/client';
-import { getFamilyForOwner, listChildren } from '@/lib/firebase/families';
+import {
+  getChild,
+  getFamilyById,
+  getFamilyForOwner,
+  listChildren,
+} from '@/lib/firebase/families';
 import type { Child, Family } from '@/lib/types';
 
 interface AuthState {
   user: User | null;
   loading: boolean;
+  /** 자녀 세션(커스텀 토큰)인지 — true면 부모 화면 접근 불가. */
+  isChild: boolean;
   family: Family | null;
   children: Child[];
   activeChildId: string | null;
@@ -39,6 +46,7 @@ const ACTIVE_CHILD_KEY = 'tq.activeChildId';
 export function AuthProvider({ children: kids }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isChild, setIsChild] = useState(false);
   const [family, setFamily] = useState<Family | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [activeChildId, setActiveChildIdState] = useState<string | null>(null);
@@ -55,8 +63,26 @@ export function AuthProvider({ children: kids }: { children: ReactNode }) {
     if (!u) {
       setFamily(null);
       setChildren([]);
+      setIsChild(false);
       return;
     }
+    // 자녀 세션? (커스텀 토큰 claim)
+    const tokenResult = await u.getIdTokenResult();
+    const role = tokenResult.claims.role as string | undefined;
+    if (role === 'child') {
+      setIsChild(true);
+      const fid = tokenResult.claims.familyId as string;
+      const cid = tokenResult.claims.childId as string;
+      const fam = await getFamilyById(fid);
+      setFamily(fam);
+      const kid = fam ? await getChild(fid, cid) : null;
+      setChildren(kid ? [kid] : []);
+      setActiveChildIdState(cid);
+      return;
+    }
+
+    // 부모 세션
+    setIsChild(false);
     const fam = await getFamilyForOwner(u.uid);
     setFamily(fam);
     if (fam) {
@@ -102,10 +128,11 @@ export function AuthProvider({ children: kids }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await fetch('/api/logout', { method: 'GET' });
+    await fetch('/api/logout', { method: 'GET' }).catch(() => {});
     await signOut(auth);
     setFamily(null);
     setChildren([]);
+    setIsChild(false);
     setActiveChildId(null);
   }, [setActiveChildId]);
 
@@ -113,6 +140,7 @@ export function AuthProvider({ children: kids }: { children: ReactNode }) {
     () => ({
       user,
       loading,
+      isChild,
       family,
       children,
       activeChildId,
@@ -125,6 +153,7 @@ export function AuthProvider({ children: kids }: { children: ReactNode }) {
     [
       user,
       loading,
+      isChild,
       family,
       children,
       activeChildId,

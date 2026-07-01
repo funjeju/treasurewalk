@@ -53,8 +53,14 @@
     "loginSubtitle": "부모(법정대리인) 계정으로 가족 보물찾기를 만드세요.",
     "googleLogin": "Google로 로그인",
     "signingIn": "로그인 중…",
-    "guardianOnly": "계정 소유자는 부모(법정대리인)입니다. 자녀는 가족 안에서 프로필로 참여해요.",
-    "loginFailed": "로그인에 실패했어요. 다시 시도해 주세요."
+    "guardianOnly": "계정 소유자는 부모(법정대리인)입니다. 자녀는 참여 코드로 접속해요.",
+    "loginFailed": "로그인에 실패했어요. 다시 시도해 주세요.",
+    "parentTab": "부모",
+    "childTab": "자녀",
+    "childLoginTitle": "참여 코드 입력",
+    "childLoginSubtitle": "부모님이 알려준 6자리 코드를 입력하세요.",
+    "childLoginBtn": "탐험 시작",
+    "codeInvalid": "코드가 올바르지 않아요. 부모님께 다시 확인해 주세요."
   },
   "onboarding": {
     "createFamilyTitle": "가족 만들기",
@@ -226,6 +232,11 @@
     "locationOnDesc": "탐험할 때 위치를 사용해요. 기본은 꺼짐이에요.",
     "consentOk": "법정대리인 동의 완료",
     "consentMissing": "동의 필요",
+    "joinCode": "참여 코드",
+    "joinCodeNone": "아직 없음",
+    "joinCodeIssue": "코드 발급",
+    "joinCodeRegen": "코드 재발급",
+    "joinCodeHint": "자녀 기기에서 로그인 화면 → 자녀 → 이 코드를 입력하면 아이 모드로 접속해요.",
     "feed": "가족 피드",
     "feedFound": "{name} 보물 발견!",
     "feedPaid": "{name} 용돈 지급완료",

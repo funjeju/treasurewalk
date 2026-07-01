@@ -4,7 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Onboarding } from '@/components/onboarding/Onboarding';
-import { updateChild, updateStepGoals } from '@/lib/firebase/families';
+import {
+  generateJoinCode,
+  updateChild,
+  updateStepGoals,
+} from '@/lib/firebase/families';
 import { listActivity } from '@/lib/firebase/activity';
 import { normalizeGoals } from '@/lib/gamification/steps';
 import type { ActivityEvent, StepGoal } from '@/lib/types';
@@ -16,6 +20,18 @@ export default function FamilyPage() {
   const th = useTranslations('hud');
   const [feed, setFeed] = useState<ActivityEvent[]>([]);
   const [saving, setSaving] = useState<string | null>(null);
+  const [codeBusy, setCodeBusy] = useState<string | null>(null);
+
+  async function issueCode(childId: string, prev?: string | null) {
+    if (!family) return;
+    setCodeBusy(childId);
+    try {
+      await generateJoinCode(family.id, childId, prev);
+      await refreshFamily();
+    } finally {
+      setCodeBusy(null);
+    }
+  }
   const [goals, setGoals] = useState<StepGoal[]>([]);
   const [goalsSaving, setGoalsSaving] = useState(false);
 
@@ -129,6 +145,33 @@ export default function FamilyPage() {
                   aria-label={`${c.displayName} ${t('locationEnabled')}`}
                 />
               </label>
+
+              {/* 자녀 참여 코드 */}
+              <div className="w-full rounded-[14px] border border-[var(--tq-border)] bg-[var(--tq-surface-2)] p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-bold">🔑 {t('joinCode')}</span>
+                  {c.joinCode ? (
+                    <span className="tq-pill select-all text-lg font-black tracking-[0.2em]">
+                      {c.joinCode}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-[var(--tq-ink-soft)]">
+                      {t('joinCodeNone')}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    className="tq-btn tq-btn-secondary ml-auto text-sm"
+                    onClick={() => issueCode(c.id, c.joinCode)}
+                    disabled={codeBusy === c.id}
+                  >
+                    {c.joinCode ? t('joinCodeRegen') : t('joinCodeIssue')}
+                  </button>
+                </div>
+                <p className="mt-1.5 text-xs text-[var(--tq-ink-soft)]">
+                  {t('joinCodeHint')}
+                </p>
+              </div>
             </li>
           ))}
         </ul>

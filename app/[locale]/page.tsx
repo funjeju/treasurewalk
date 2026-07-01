@@ -6,14 +6,14 @@ import { useRouter } from '@/lib/i18n/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 export default function IndexPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isChild } = useAuth();
   const router = useRouter();
   const t = useTranslations('common');
 
   useEffect(() => {
     if (loading) return;
-    router.replace(user ? '/dashboard' : '/login');
-  }, [user, loading, router]);
+    router.replace(user ? (isChild ? '/map' : '/dashboard') : '/login');
+  }, [user, loading, isChild, router]);
 
   return (
     <main className="grid min-h-screen place-items-center">

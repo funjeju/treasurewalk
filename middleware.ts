@@ -29,7 +29,7 @@ export const config = {
   matcher: [
     '/api/login',
     '/api/logout',
-    // _next, 정적 파일 제외한 모든 경로 (로케일 라우팅 대상)
-    '/((?!_next|.*\\..*).*)',
+    // api, _next, 정적 파일 제외한 모든 경로 (로케일 라우팅 대상)
+    '/((?!api|_next|.*\\..*).*)',
   ],
 };

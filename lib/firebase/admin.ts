@@ -1,6 +1,7 @@
 import 'server-only';
 import { getApps, getApp, initializeApp, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
+import { getAuth, type Auth } from 'firebase-admin/auth';
 
 /**
  * Firebase Admin 싱글톤 (서버 전용).
@@ -26,8 +27,14 @@ function buildAdminApp(): App {
 }
 
 let _db: Firestore | null = null;
+let _auth: Auth | null = null;
 
 export function adminDb(): Firestore {
   if (!_db) _db = getFirestore(buildAdminApp());
   return _db;
+}
+
+export function adminAuth(): Auth {
+  if (!_auth) _auth = getAuth(buildAdminApp());
+  return _auth;
 }

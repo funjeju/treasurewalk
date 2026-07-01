@@ -7,7 +7,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 
 export function AppHeader() {
   const t = useTranslations('nav');
-  const { user, logout } = useAuth();
+  const { user, isChild, logout } = useAuth();
   const router = useRouter();
 
   return (
@@ -25,7 +25,7 @@ export function AppHeader() {
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <LocaleSwitcher />
-          {user && (
+          {user && !isChild && (
             <Link
               href="/dashboard"
               aria-label={t('parentMode')}

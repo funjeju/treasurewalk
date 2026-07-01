@@ -46,6 +46,8 @@ export interface Child {
   locationEnabled: boolean;
   /** 부모 법정대리인 동의 (docs/07 A.3) */
   guardianConsent: boolean;
+  /** 자녀 참여 코드 (자녀 기기 로그인용). */
+  joinCode?: string | null;
   /** 오늘 이미 청구한 걸음 용돈 (중복 방지). */
   stepRewardClaimedDate?: string; // YYYY-MM-DD
   stepRewardClaimedAmount?: number;

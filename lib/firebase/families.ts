@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -47,6 +48,54 @@ export async function updateStepGoals(
     stepGoals,
     updatedAt: serverTimestamp(),
   });
+}
+
+/** familyId 로 가족 조회 (자녀 세션에서 사용). */
+export async function getFamilyById(familyId: string): Promise<Family | null> {
+  const d = await getDoc(doc(db, 'families', familyId));
+  if (!d.exists()) return null;
+  const data = d.data();
+  return {
+    id: d.id,
+    ownerUid: data.ownerUid,
+    name: data.name,
+    locale: data.locale,
+    stepGoals: data.stepGoals ?? undefined,
+    createdAt: millis(data.createdAt),
+    updatedAt: millis(data.updatedAt),
+  };
+}
+
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // 헷갈리는 문자 제외
+function randomCode(len = 6): string {
+  let s = '';
+  for (let i = 0; i < len; i += 1)
+    s += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+  return s;
+}
+
+/**
+ * 자녀 참여 코드 발급 (부모). joinCodes/{code} 매핑 + child.joinCode 저장.
+ * 기존 코드가 있으면 폐기하고 새로 발급.
+ */
+export async function generateJoinCode(
+  familyId: string,
+  childId: string,
+  prevCode?: string | null,
+): Promise<string> {
+  if (prevCode) {
+    await deleteDoc(doc(db, 'joinCodes', prevCode)).catch(() => {});
+  }
+  const code = randomCode();
+  await setDoc(doc(db, 'joinCodes', code), {
+    familyId,
+    childId,
+    createdAt: serverTimestamp(),
+  });
+  await updateDoc(doc(db, 'families', familyId, 'children', childId), {
+    joinCode: code,
+  });
+  return code;
 }
 
 /** 최초 로그인 시 가족 생성. */
@@ -139,6 +188,7 @@ export async function listChildren(familyId: string): Promise<Child[]> {
       lastActiveDate: data.lastActiveDate ?? '',
       locationEnabled: data.locationEnabled ?? false,
       guardianConsent: data.guardianConsent ?? false,
+      joinCode: data.joinCode ?? null,
       createdAt: millis(data.createdAt),
     } satisfies Child;
   });
@@ -164,6 +214,7 @@ export async function getChild(
     lastActiveDate: data.lastActiveDate ?? '',
     locationEnabled: data.locationEnabled ?? false,
     guardianConsent: data.guardianConsent ?? false,
+    joinCode: data.joinCode ?? null,
     createdAt: millis(data.createdAt),
   };
 }
