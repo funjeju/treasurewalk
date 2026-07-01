@@ -26,13 +26,13 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className="tq-btn tq-btn-ghost"
+      className="tq-btn tq-btn-ghost shrink-0 whitespace-nowrap px-2"
       onClick={() => setTheme(next)}
       aria-label={`${t('label')}: ${t(current)} → ${t(next)}`}
       title={`${t('label')}: ${t(current)}`}
     >
       <span aria-hidden>{ICON[current]}</span>
-      <span className="text-sm">{t(current)}</span>
+      <span className="hidden text-sm sm:inline">{t(current)}</span>
     </button>
   );
 }

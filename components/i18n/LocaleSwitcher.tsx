@@ -14,10 +14,10 @@ export function LocaleSwitcher() {
   const [pending, startTransition] = useTransition();
 
   return (
-    <label className="tq-pill" aria-label="Language">
+    <label className="tq-pill shrink-0 whitespace-nowrap px-2" aria-label="Language">
       <span aria-hidden>🌐</span>
       <select
-        className="bg-transparent outline-none font-bold"
+        className="max-w-[4.5rem] bg-transparent font-bold outline-none sm:max-w-none"
         value={locale}
         disabled={pending}
         onChange={(e) => {

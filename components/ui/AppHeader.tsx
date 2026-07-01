@@ -14,28 +14,30 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--tq-border)] bg-[var(--tq-surface)]/95 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2">
+      <div className="mx-auto flex max-w-5xl items-center gap-1.5 px-3 py-2 sm:gap-2 sm:px-4">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 font-extrabold text-[var(--tq-gold-deep)]"
+          className="flex shrink-0 items-center gap-2 font-extrabold text-[var(--tq-gold-deep)]"
         >
           <span aria-hidden className="text-xl">🗺️</span>
           <span className="hidden sm:inline">{tc('appName')}</span>
         </Link>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <LocaleSwitcher />
           <ThemeToggle />
           {user && (
             <button
               type="button"
-              className="tq-btn tq-btn-secondary text-sm"
+              aria-label={t('logout')}
+              className="tq-btn tq-btn-secondary shrink-0 whitespace-nowrap px-3 text-sm"
               onClick={async () => {
                 await logout();
                 router.replace('/login');
               }}
             >
-              {t('logout')}
+              <span aria-hidden className="sm:hidden">🚪</span>
+              <span className="hidden sm:inline">{t('logout')}</span>
             </button>
           )}
         </div>
