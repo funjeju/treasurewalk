@@ -262,17 +262,11 @@ export default function DashboardPage() {
             {t('reward')}: {format.number(tr.reward.amount)} {tc('krw')} · {t('radius')}:{' '}
             {tr.radiusM}m
           </p>
-          <p className="text-xs">
-            <span className="text-[var(--tq-ink-soft)]">
-              {t('assignedTo')}: {child?.displayName ?? t('anyChild')}
-            </span>{' '}
-            <span
-              className={`font-bold ${
-                found ? 'text-[var(--tq-jewel)]' : 'text-[var(--tq-gold-deep)]'
-              }`}
-            >
-              · {found ? t('statusFound') : t('activeTreasures')}
-            </span>
+          <p className="text-xs text-[var(--tq-ink-soft)]">
+            {t('assignedTo')}: {child?.displayName ?? t('anyChild')}
+            {found && (
+              <span className="font-bold text-[var(--tq-jewel)]"> · {t('statusFound')}</span>
+            )}
           </p>
           <div className="mt-2 flex gap-2">
             {!found && (

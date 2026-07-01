@@ -28,3 +28,11 @@ export const auth: Auth = getAuth(firebaseApp);
 export const db: Firestore = getFirestore(firebaseApp);
 export const storage: FirebaseStorage = getStorage(firebaseApp);
 export const googleProvider = new GoogleAuthProvider();
+
+// 개발 전용: 커스텀 토큰으로 클라 로그인(모바일 UI 점검용). 프로덕션 빌드엔 미포함.
+if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
+  import('firebase/auth').then(({ signInWithCustomToken }) => {
+    (window as unknown as Record<string, unknown>).__devSignIn = (token: string) =>
+      signInWithCustomToken(auth, token);
+  });
+}
