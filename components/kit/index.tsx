@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
 
+export { Icon, type IconName } from './Icon';
+import { Icon } from './Icon';
+
 /**
  * GAME UI KIT — 다크 프리미엄 재사용 컴포넌트.
  * 스타일은 app/kit.css(.g-*, .glass ...). 모든 화면이 이 어휘를 공유한다.
@@ -181,8 +184,8 @@ export function CurrencyTag({
 }) {
   return (
     <span className={cx('inline-flex items-center gap-1 font-extrabold', className)}>
-      <Orb variant={kind === 'coin' ? 'gold' : 'gem'} className="!h-5 !w-5 !text-[0.7rem]">
-        {kind === 'coin' ? '🪙' : '💎'}
+      <Orb variant={kind === 'coin' ? 'gold' : 'gem'} className="!h-5 !w-5">
+        <Icon name={kind === 'coin' ? 'coin' : 'gem'} size={13} />
       </Orb>
       {typeof amount === 'number' ? amount.toLocaleString() : amount}
     </span>

@@ -12,6 +12,7 @@ import type { StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { GeoPoint, Treasure } from '@/lib/types';
 import { circlePolygon } from '@/lib/geo/circle';
+import { Icon } from '@/components/kit';
 
 /**
  * 기본 지도 스타일 — 키 없이 쓰는 OpenStreetMap 래스터 (거리 수준 타일 O).
@@ -188,7 +189,7 @@ function TreasurePin({ found, label }: { found: boolean; label: string }) {
       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
     >
       <span className="tq-pin-badge" aria-hidden>
-        {found ? '🏁' : '🎁'}
+        <Icon name={found ? 'flag' : 'chest'} size={20} />
       </span>
     </button>
   );

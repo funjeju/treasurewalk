@@ -14,6 +14,7 @@ import {
   Stars,
   Segmented,
   SectionTitle,
+  Icon,
   type Rarity,
 } from '@/components/kit';
 
@@ -74,7 +75,11 @@ export default function CollectionPage() {
 
   return (
     <div className="space-y-4">
-      <SectionTitle action={<ChildSwitcher />}>📖 {t('title')}</SectionTitle>
+      <SectionTitle action={<ChildSwitcher />}>
+        <span className="inline-flex items-center gap-2">
+          <Icon name="book" size={22} /> {t('title')}
+        </span>
+      </SectionTitle>
 
       {/* 완성도 요약 */}
       <GlassInset className="flex items-center justify-around p-3 text-center">
@@ -126,10 +131,10 @@ export default function CollectionPage() {
                           className="h-full w-full rounded-[14px] object-cover"
                         />
                       ) : (
-                        '🎁'
+                        <Icon name="chest" size={38} />
                       )
                     ) : (
-                      '🔒'
+                      <Icon name="lock" size={34} />
                     )}
                   </CardThumb>
                   <p className="mt-2 truncate text-center text-xs font-bold">
