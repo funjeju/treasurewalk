@@ -68,8 +68,13 @@
   "parent": {
     "dashboardTitle": "탐험 본부",
     "welcome": "{name} 탐험대",
-    "activeTreasures": "활성 보물",
+    "activeTreasures": "숨겨둔 보물",
+    "foundTreasures": "찾은 보물",
     "noTreasures": "아직 숨긴 보물이 없어요 — 첫 보물을 숨겨 탐험을 시작하세요.",
+    "noFoundTreasures": "아직 찾은 보물이 없어요.",
+    "edit": "수정",
+    "delete": "삭제",
+    "deleteConfirm": "이 보물을 삭제할까요? 되돌릴 수 없어요.",
     "claims": "발견 · 요청 현황",
     "noClaims": "아직 발견된 보물이 없어요.",
     "statusFound": "발견됨",
@@ -86,6 +91,8 @@
   },
   "treasure": {
     "newTitle": "보물 숨기기",
+    "editTitle": "보물 수정",
+    "saveChanges": "변경 저장",
     "stepLocation": "1. 지도에서 위치 찍기",
     "stepLocationHint": "지도를 움직여 보물을 숨길 곳에 핀을 놓으세요.",
     "useMyLocation": "내 위치로",

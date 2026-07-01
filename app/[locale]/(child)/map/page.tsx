@@ -39,6 +39,16 @@ export default function ChildMapPage() {
   const { steps, start: startSteps } = useStepCounter(child?.id ?? null);
   const triggered = useRef<Set<string>>(new Set());
   const lastVibrate = useRef(0);
+  const [recenter, setRecenter] = useState<GeoPoint | null>(null);
+  const didCenter = useRef(false);
+
+  // 위치 최초 수신 시 한 번 카메라를 내 위치로
+  useEffect(() => {
+    if (position && !didCenter.current) {
+      didCenter.current = true;
+      setRecenter({ ...position });
+    }
+  }, [position]);
 
   // active 보물 로드
   const loadTreasures = useCallback(async () => {
@@ -149,8 +159,12 @@ export default function ChildMapPage() {
           <GameMapDynamic
             center={mapCenter}
             zoom={16}
+            recenter={recenter}
             treasures={treasures}
             userLocation={position}
+            onLocate={
+              position ? () => setRecenter({ ...position }) : undefined
+            }
           />
         </div>
       </div>

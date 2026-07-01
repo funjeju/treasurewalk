@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -141,4 +142,43 @@ export async function setTreasureStatus(
     status,
     updatedAt: serverTimestamp(),
   });
+}
+
+export interface TreasurePatch {
+  location?: GeoPoint;
+  radiusM?: number;
+  amount?: number;
+  title?: string | null;
+  note?: string | null;
+  assignedChildId?: string | null;
+  hintPhotoUrl?: string;
+}
+
+/** 보물 수정. reward.amount 는 중첩 필드로 갱신. */
+export async function updateTreasure(
+  familyId: string,
+  treasureId: string,
+  patch: TreasurePatch,
+): Promise<void> {
+  const data: Record<string, unknown> = { updatedAt: serverTimestamp() };
+  if (patch.location) data.location = patch.location;
+  if (patch.radiusM != null) data.radiusM = patch.radiusM;
+  if (patch.amount != null) data['reward.amount'] = patch.amount;
+  if (patch.title !== undefined) data.title = patch.title;
+  if (patch.note !== undefined) data.note = patch.note;
+  if (patch.assignedChildId !== undefined) data.assignedChildId = patch.assignedChildId;
+  if (patch.hintPhotoUrl !== undefined) data.hintPhotoUrl = patch.hintPhotoUrl;
+  await updateDoc(doc(db, 'families', familyId, 'treasures', treasureId), data);
+}
+
+/** 보물 삭제 (하위 claims 포함). 클라이언트에선 claims 를 먼저 지운다. */
+export async function deleteTreasure(
+  familyId: string,
+  treasureId: string,
+): Promise<void> {
+  const claimsSnap = await getDocs(
+    collection(db, 'families', familyId, 'treasures', treasureId, 'claims'),
+  );
+  await Promise.all(claimsSnap.docs.map((c) => deleteDoc(c.ref)));
+  await deleteDoc(doc(db, 'families', familyId, 'treasures', treasureId));
 }

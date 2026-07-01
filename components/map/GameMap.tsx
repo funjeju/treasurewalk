@@ -1,7 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
-import Map, { Marker, Source, Layer, NavigationControl } from 'react-map-gl/maplibre';
+import { useEffect, useMemo, useRef } from 'react';
+import Map, {
+  Marker,
+  Source,
+  Layer,
+  NavigationControl,
+  type MapRef,
+} from 'react-map-gl/maplibre';
 import type { StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { GeoPoint, Treasure } from '@/lib/types';
@@ -28,6 +34,8 @@ const OSM_STYLE: StyleSpecification = {
 export interface GameMapProps {
   center: GeoPoint;
   zoom?: number;
+  /** 카메라를 이 좌표로 이동(flyTo). 값이 바뀔 때마다 이동. */
+  recenter?: GeoPoint | null;
   /** 보물 핀들 */
   treasures?: Treasure[];
   /** 자녀 현재 위치 마커 */
@@ -40,20 +48,25 @@ export interface GameMapProps {
   onPick?: (p: GeoPoint) => void;
   /** 보물 핀 클릭 */
   onTreasureClick?: (t: Treasure) => void;
+  /** 내 위치 버튼 (제공 시 우하단에 버튼 표시) */
+  onLocate?: () => void;
   className?: string;
 }
 
 export function GameMap({
   center,
   zoom = 16,
+  recenter,
   treasures = [],
   userLocation,
   pickMode = false,
   pickRadiusM = 40,
   onPick,
   onTreasureClick,
+  onLocate,
   className,
 }: GameMapProps) {
+  const mapRef = useRef<MapRef | null>(null);
   const mapStyle: string | StyleSpecification =
     process.env.NEXT_PUBLIC_MAP_STYLE_URL || OSM_STYLE;
 
@@ -62,49 +75,60 @@ export function GameMap({
     [pickMode, center, pickRadiusM],
   );
 
+  // recenter 값이 바뀌면 카메라 이동 (initialViewState 는 최초 1회만 적용되므로)
+  useEffect(() => {
+    if (!recenter) return;
+    const m = mapRef.current;
+    if (!m) return;
+    const z = m.getZoom();
+    m.flyTo({
+      center: [recenter.lng, recenter.lat],
+      zoom: z < 14 ? 16 : z,
+      duration: 800,
+    });
+  }, [recenter]);
+
   return (
-    <div className={className ?? 'h-full w-full'}>
+    <div className={className ?? 'relative h-full w-full'}>
       <Map
-        initialViewState={{
-          longitude: center.lng,
-          latitude: center.lat,
-          zoom,
-        }}
+        ref={mapRef}
+        initialViewState={{ longitude: center.lng, latitude: center.lat, zoom }}
         mapStyle={mapStyle}
-        style={{ width: '100%', height: '100%', borderRadius: 18 }}
+        style={{ width: '100%', height: '100%' }}
         onClick={(e) => {
-          if (pickMode && onPick) {
-            onPick({ lat: e.lngLat.lat, lng: e.lngLat.lng });
-          }
+          if (pickMode && onPick) onPick({ lat: e.lngLat.lat, lng: e.lngLat.lng });
         }}
       >
         <NavigationControl position="top-right" showCompass={false} />
 
-        {/* 보물별 발견 반경 (게임 월드 느낌) */}
+        {/* 보물별 발견 반경 — 상태에 따라 색 구분 (active=골드, found=에메랄드) */}
         {treasures.map((t) => {
           const poly = circlePolygon(t.location, t.radiusM);
+          const found = t.status === 'found';
           return (
-            <Source
-              key={`circle-${t.id}`}
-              id={`circle-${t.id}`}
-              type="geojson"
-              data={poly}
-            >
+            <Source key={`circle-${t.id}`} id={`circle-${t.id}`} type="geojson" data={poly}>
               <Layer
                 id={`circle-fill-${t.id}`}
                 type="fill"
-                paint={{ 'fill-color': '#E8B23A', 'fill-opacity': 0.18 }}
+                paint={{
+                  'fill-color': found ? '#1D9E75' : '#E8B23A',
+                  'fill-opacity': found ? 0.12 : 0.2,
+                }}
               />
               <Layer
                 id={`circle-line-${t.id}`}
                 type="line"
-                paint={{ 'line-color': '#B97A2E', 'line-width': 2 }}
+                paint={{
+                  'line-color': found ? '#1D9E75' : '#B97A2E',
+                  'line-width': 2,
+                  'line-dasharray': found ? [2, 2] : [1, 0],
+                }}
               />
             </Source>
           );
         })}
 
-        {/* 보물 핀 */}
+        {/* 보물 핀 — 깔끔한 글로시 배지 + 포인터 */}
         {treasures.map((t) => (
           <Marker
             key={t.id}
@@ -113,53 +137,59 @@ export function GameMap({
             anchor="bottom"
             onClick={() => onTreasureClick?.(t)}
           >
-            <button
-              type="button"
-              aria-label={t.title ?? 'treasure'}
-              className="grid place-items-center text-2xl drop-shadow"
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              {t.status === 'found' ? '✅' : '📍'}
-              <span className="text-xl">🎁</span>
-            </button>
+            <TreasurePin found={t.status === 'found'} label={t.title ?? 'treasure'} />
           </Marker>
         ))}
 
-        {/* 자녀 위치 */}
+        {/* 자녀 위치 — 파란 점 + 펄스 링 */}
         {userLocation && (
-          <Marker
-            longitude={userLocation.lng}
-            latitude={userLocation.lat}
-            anchor="center"
-          >
-            <span
-              className="block h-4 w-4 rounded-full border-2 border-white bg-[var(--tq-sapphire)] shadow"
-              aria-label="me"
-            />
+          <Marker longitude={userLocation.lng} latitude={userLocation.lat} anchor="center">
+            <span className="tq-me-dot" aria-label="me" />
           </Marker>
         )}
 
-        {/* pickMode: 화면 중앙 고정 핀 + 반경 미리보기 */}
+        {/* pickMode: 중앙 핀 + 반경 미리보기 */}
         {pickMode && pickCircle && (
           <Source id="pick-circle" type="geojson" data={pickCircle}>
-            <Layer
-              id="pick-fill"
-              type="fill"
-              paint={{ 'fill-color': '#1D9E75', 'fill-opacity': 0.2 }}
-            />
-            <Layer
-              id="pick-line"
-              type="line"
-              paint={{ 'line-color': '#1D9E75', 'line-width': 2 }}
-            />
+            <Layer id="pick-fill" type="fill" paint={{ 'fill-color': '#1D9E75', 'fill-opacity': 0.2 }} />
+            <Layer id="pick-line" type="line" paint={{ 'line-color': '#1D9E75', 'line-width': 2 }} />
           </Source>
         )}
         {pickMode && (
           <Marker longitude={center.lng} latitude={center.lat} anchor="bottom">
-            <span className="text-3xl drop-shadow" aria-label="pin">📍</span>
+            <TreasurePin found={false} label="pin" />
           </Marker>
         )}
       </Map>
+
+      {/* 내 위치 버튼 */}
+      {onLocate && (
+        <button
+          type="button"
+          onClick={onLocate}
+          aria-label="내 위치"
+          className="absolute bottom-3 right-3 z-10 grid h-11 w-11 place-items-center rounded-full border border-[var(--tq-border)] bg-[var(--tq-surface)] text-xl shadow-lg active:scale-95"
+        >
+          📍
+        </button>
+      )}
     </div>
+  );
+}
+
+/** 지도 핀 — 원형 글로시 배지 + 아래 포인터. active=골드/🎁, found=에메랄드/🏁 */
+function TreasurePin({ found, label }: { found: boolean; label: string }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      className="tq-pin"
+      data-found={found}
+      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+    >
+      <span className="tq-pin-badge" aria-hidden>
+        {found ? '🏁' : '🎁'}
+      </span>
+    </button>
   );
 }

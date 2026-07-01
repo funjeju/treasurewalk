@@ -68,8 +68,13 @@
   "parent": {
     "dashboardTitle": "Expedition HQ",
     "welcome": "{name}",
-    "activeTreasures": "Active treasures",
+    "activeTreasures": "Hidden treasures",
+    "foundTreasures": "Found treasures",
     "noTreasures": "No treasures hidden yet — hide your first one to start the hunt.",
+    "noFoundTreasures": "No treasures found yet.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this treasure? This can't be undone.",
     "claims": "Finds & requests",
     "noClaims": "No treasures found yet.",
     "statusFound": "Found",
@@ -86,6 +91,8 @@
   },
   "treasure": {
     "newTitle": "Hide a treasure",
+    "editTitle": "Edit treasure",
+    "saveChanges": "Save changes",
     "stepLocation": "1. Pin the location",
     "stepLocationHint": "Move the map and drop a pin where you'll hide the treasure.",
     "useMyLocation": "Use my location",
