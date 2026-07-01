@@ -12,7 +12,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from './client';
+import { auth, db, storage } from './client';
 import type { Child, Claim, ClaimStatus, GeoPoint, Treasure } from '@/lib/types';
 import { findReward } from '@/lib/gamification/economy';
 import { levelFromXp } from '@/lib/gamification/levels';
@@ -127,14 +127,16 @@ export async function createFoundClaim(
   return { claimId: claimRef.id, leveledUp };
 }
 
-/** 인증서 PNG 업로드 → URL. */
+/** 인증서 PNG 업로드 → 소유자(부모) uid 스코프 경로. */
 export async function uploadCertificate(
   familyId: string,
   blob: Blob,
 ): Promise<string> {
-  const path = `families/${familyId}/certificates/${Date.now()}.png`;
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error('not authenticated');
+  const path = `owners/${uid}/families/${familyId}/certificates/${Date.now()}.png`;
   const r = storageRef(storage, path);
-  await uploadBytes(r, blob);
+  await uploadBytes(r, blob, { contentType: 'image/png' });
   return getDownloadURL(r);
 }
 

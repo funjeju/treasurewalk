@@ -11,7 +11,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from './client';
+import { auth, db, storage } from './client';
 import type { GeoPoint, Treasure, TreasureStatus } from '@/lib/types';
 
 const millis = (v: unknown): number =>
@@ -47,12 +47,14 @@ function mapTreasure(id: string, data: Record<string, unknown>): Treasure {
   };
 }
 
-/** 힌트 사진 업로드 → 가족 스코프 경로 (docs/07 §B). */
+/** 힌트 사진 업로드 → 소유자(부모) uid 스코프 경로 (docs/07 §B). */
 export async function uploadHintPhoto(
   familyId: string,
   file: File,
 ): Promise<string> {
-  const path = `families/${familyId}/hints/${Date.now()}-${file.name}`;
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error('not authenticated');
+  const path = `owners/${uid}/families/${familyId}/hints/${Date.now()}-${file.name}`;
   const r = storageRef(storage, path);
   await uploadBytes(r, file);
   return getDownloadURL(r);

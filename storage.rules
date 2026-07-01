@@ -1,19 +1,14 @@
 rules_version = '2';
 
-// 이미지 업로드(힌트/인증서)는 가족 스코프 경로로 제한 (docs/07 §B)
+// 이미지 업로드(힌트/인증서)는 소유자(부모) uid 스코프 경로로 제한 (docs/07 §B, A.3).
+// P1: 계정 소유자=부모, 모든 업로드가 부모 세션에서 발생 → uid 격리로 충분.
+// (Storage→Firestore 크로스서비스 읽기는 이 프로젝트에서 불가하므로 uid 경로로 격리)
 service firebase.storage {
   match /b/{bucket}/o {
-    function signedIn() {
-      return request.auth != null;
-    }
-
-    function ownsFamily(fid) {
-      return signedIn() &&
-        firestore.get(/databases/(default)/documents/families/$(fid)).data.ownerUid == request.auth.uid;
-    }
-
-    match /families/{fid}/{allPaths=**} {
-      allow read, write: if ownsFamily(fid)
+    match /owners/{uid}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
         && request.resource.size < 8 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
