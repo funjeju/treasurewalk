@@ -10,31 +10,54 @@ export function Hud({ child, steps }: { child: Child; steps: number }) {
   const progress = levelProgress(child.xp);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="tq-pill" title={t('level')}>
-        <span aria-hidden>⭐</span>
-        {t('level')} {child.level}
-        <span
-          className="ml-1 h-1.5 w-10 overflow-hidden rounded-full bg-[var(--tq-fog)]"
-          aria-hidden
-        >
-          <span
-            className="block h-full bg-[var(--tq-gold)]"
-            style={{ width: `${Math.round(progress * 100)}%` }}
-          />
+    <div className="tq-hud-bar">
+      <span className="tq-stat" title={t('level')}>
+        <span className="tq-stat-ico tq-ico-level" aria-hidden>
+          ⭐
+        </span>
+        <span className="flex flex-col leading-tight">
+          <span className="text-[0.65rem] font-bold text-[var(--tq-ink-soft)]">
+            {t('level')}
+          </span>
+          <span className="flex items-center gap-1">
+            {child.level}
+            <span
+              className="h-1.5 w-9 overflow-hidden rounded-full bg-[var(--tq-fog)]"
+              aria-hidden
+            >
+              <span
+                className="block h-full rounded-full bg-[var(--tq-gold)]"
+                style={{ width: `${Math.round(progress * 100)}%` }}
+              />
+            </span>
+          </span>
         </span>
       </span>
-      <span className="tq-pill" title={t('coin')}>
-        <span aria-hidden>🪙</span>
+
+      <span className="tq-stat" title={t('coin')}>
+        <span className="tq-stat-ico tq-ico-coin" aria-hidden>
+          🪙
+        </span>
         {child.coins.toLocaleString()}
       </span>
-      <span className="tq-pill" title={t('streak')}>
-        <span aria-hidden>🔥</span>
+
+      <span className="tq-stat" title={t('streak')}>
+        <span className="tq-stat-ico tq-ico-streak" aria-hidden>
+          🔥
+        </span>
         {child.streakDays}
       </span>
-      <span className="tq-pill" title={t('steps')}>
-        <span aria-hidden>👟</span>
-        {steps.toLocaleString()} {t('steps')}
+
+      <span className="tq-stat" title={t('steps')}>
+        <span className="tq-stat-ico tq-ico-steps" aria-hidden>
+          👟
+        </span>
+        <span className="flex flex-col leading-tight">
+          <span className="text-[0.65rem] font-bold text-[var(--tq-ink-soft)]">
+            {t('steps')}
+          </span>
+          {steps.toLocaleString()}
+        </span>
       </span>
     </div>
   );

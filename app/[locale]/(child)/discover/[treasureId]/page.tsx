@@ -108,7 +108,7 @@ export default function DiscoverPage({
         <RewardBurst play={opened} />
 
         <h1
-          className={`text-3xl font-extrabold text-[var(--tq-gold-deep)] ${
+          className={`text-3xl font-extrabold text-[var(--tq-gold-deep)] tq-glow ${
             opened ? 'tq-pop' : ''
           }`}
         >

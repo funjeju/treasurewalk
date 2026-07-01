@@ -123,33 +123,36 @@ export default function ChildMapPage() {
 
   return (
     <div className="space-y-3">
-      {/* HUD */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* 탐험가 + HUD */}
+      <div className="flex items-center justify-between gap-2">
         <ChildSwitcher />
-        <div className="ml-auto">
-          <Link href="/collection" className="tq-btn tq-btn-secondary text-sm">
-            📖 {tn('collection')}
-          </Link>
-        </div>
+        <span className="text-sm font-extrabold text-[var(--tq-gold-deep)]">
+          {child.displayName}
+        </span>
       </div>
       <Hud child={child} steps={steps} />
 
       {/* 위치 사용 중 인디케이터 (docs/07 A.2-1) */}
       {locationEnabled && (
-        <div className="flex items-center gap-2 rounded-[14px] bg-[var(--tq-jewel)]/15 px-3 py-2 text-sm font-bold text-[var(--tq-jewel)]">
-          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--tq-jewel)]" />
+        <div
+          className="flex items-center gap-2 rounded-[var(--tq-radius-pill)] border border-[var(--tq-border)] px-3 py-2 text-sm font-extrabold text-[var(--tq-jewel)]"
+          style={{ background: 'color-mix(in srgb, var(--tq-jewel) 15%, var(--tq-surface))' }}
+        >
+          <span className="tq-pulse inline-block h-2.5 w-2.5 rounded-full bg-[var(--tq-jewel)]" />
           {t('locationActive')}
         </div>
       )}
 
-      {/* 지도 */}
-      <div className="h-[55vh] w-full overflow-hidden rounded-[18px]">
-        <GameMapDynamic
-          center={mapCenter}
-          zoom={16}
-          treasures={treasures}
-          userLocation={position}
-        />
+      {/* 지도 — 게임 월드 프레임 */}
+      <div className="tq-map-frame">
+        <div className="h-[55vh] w-full">
+          <GameMapDynamic
+            center={mapCenter}
+            zoom={16}
+            treasures={treasures}
+            userLocation={position}
+          />
+        </div>
       </div>
 
       {/* 위치 OFF 안내 */}

@@ -74,9 +74,15 @@
 
 html,
 body {
-  background: var(--tq-parchment);
   color: var(--tq-ink);
   min-height: 100%;
+  /* 양피지 질감 — 이미지 없이 레이어드 그라디언트로 깊이 */
+  background-color: var(--tq-parchment);
+  background-image:
+    radial-gradient(120% 90% at 50% -10%, color-mix(in srgb, var(--tq-gold) 14%, transparent), transparent 60%),
+    radial-gradient(80% 60% at 100% 0%, color-mix(in srgb, var(--tq-jewel) 8%, transparent), transparent 55%),
+    radial-gradient(90% 70% at 0% 100%, color-mix(in srgb, var(--tq-ruby) 8%, transparent), transparent 55%);
+  background-attachment: fixed;
 }
 
 body {
@@ -138,12 +144,22 @@ a {
   cursor: not-allowed;
 }
 .tq-btn-primary {
-  background: var(--tq-gold);
+  /* 글로시 골드 — 상단 하이라이트 + 하단 입체 */
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tq-gold) 78%, white) 0%, var(--tq-gold) 45%, var(--tq-gold-deep) 100%);
   color: var(--tq-gold-ink);
-  box-shadow: 0 4px 0 var(--tq-gold-deep);
+  box-shadow:
+    0 4px 0 var(--tq-gold-deep),
+    inset 0 1px 0 rgb(255 255 255 / 0.5);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.35);
+}
+.tq-btn-primary:hover {
+  filter: brightness(1.04);
 }
 .tq-btn-primary:active {
-  box-shadow: 0 2px 0 var(--tq-gold-deep);
+  box-shadow:
+    0 2px 0 var(--tq-gold-deep),
+    inset 0 1px 0 rgb(255 255 255 / 0.4);
 }
 .tq-btn-secondary {
   background: var(--tq-surface);
@@ -160,12 +176,15 @@ a {
   min-height: 44px;
 }
 
-/* 청키 패널/카드 */
+/* 청키 패널/카드 — 상단 하이라이트 + 부드러운 깊이 */
 .tq-panel {
-  background: var(--tq-surface);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tq-surface) 100%, white 6%), var(--tq-surface));
   border: 1px solid var(--tq-border);
   border-radius: 18px;
-  box-shadow: 0 2px 10px rgb(0 0 0 / 0.06);
+  box-shadow:
+    0 6px 18px rgb(74 46 12 / 0.1),
+    inset 0 1px 0 rgb(255 255 255 / 0.5);
 }
 
 .tq-pill {
@@ -226,3 +245,123 @@ a {
 .tq-float-up {
   animation: tq-float-up 1.4s ease-out both;
 }
+
+/* ── 게임 HUD ────────────────────────────────────────────── */
+.tq-hud-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--tq-radius-pill);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tq-surface) 100%, white 8%), var(--tq-surface-2));
+  border: 1px solid var(--tq-border);
+  box-shadow:
+    0 6px 16px rgb(74 46 12 / 0.12),
+    inset 0 1px 0 rgb(255 255 255 / 0.6);
+}
+
+/* 글로시 스탯 칩 (코인/레벨/스트릭/걸음) */
+.tq-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.45rem;
+  border-radius: var(--tq-radius-pill);
+  background: linear-gradient(180deg, var(--tq-surface), var(--tq-surface-2));
+  border: 1px solid var(--tq-border);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--tq-ink);
+}
+.tq-stat-ico {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  font-size: 0.95rem;
+  box-shadow: inset 0 -2px 4px rgb(0 0 0 / 0.15), inset 0 1px 0 rgb(255 255 255 / 0.6);
+}
+.tq-ico-coin { background: radial-gradient(circle at 35% 30%, #ffe08a, var(--tq-gold) 60%, var(--tq-gold-deep)); }
+.tq-ico-level { background: radial-gradient(circle at 35% 30%, #bfe0ff, var(--tq-sapphire) 65%, #235f97); }
+.tq-ico-streak { background: radial-gradient(circle at 35% 30%, #ffd07a, var(--tq-ruby) 65%, #a53c1c); }
+.tq-ico-steps { background: radial-gradient(circle at 35% 30%, #b7f0d8, var(--tq-jewel) 65%, #14684d); }
+
+/* ── 게임 월드 지도 프레임 ──────────────────────────────── */
+.tq-map-frame {
+  position: relative;
+  border-radius: 20px;
+  padding: 6px;
+  background:
+    linear-gradient(135deg, var(--tq-gold-deep), var(--tq-gold) 40%, var(--tq-gold-deep));
+  box-shadow:
+    0 10px 26px rgb(74 46 12 / 0.22),
+    inset 0 1px 0 rgb(255 255 255 / 0.4);
+}
+.tq-map-frame > * {
+  border-radius: 15px;
+  overflow: hidden;
+}
+/* 미탐험 안개 느낌의 비네트 */
+.tq-map-frame::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 15px;
+  pointer-events: none;
+  box-shadow: inset 0 0 60px 10px rgb(44 30 8 / 0.28);
+  z-index: 2;
+}
+
+/* ── 하단 내비게이션 (아이 모드) ────────────────────────── */
+.tq-bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  border-radius: var(--tq-radius-pill);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tq-surface) 100%, white 10%), var(--tq-surface-2));
+  border: 1px solid var(--tq-border);
+  box-shadow:
+    0 10px 28px rgb(74 46 12 / 0.28),
+    inset 0 1px 0 rgb(255 255 255 / 0.6);
+}
+.tq-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 68px;
+  min-height: 52px;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--tq-radius-pill);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--tq-ink-soft);
+  transition: transform 0.08s ease, background 0.15s ease, color 0.15s ease;
+}
+.tq-nav-item .tq-nav-ico { font-size: 1.35rem; line-height: 1; }
+.tq-nav-item:active { transform: scale(0.94); }
+.tq-nav-item[data-active='true'] {
+  color: var(--tq-gold-ink);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tq-gold) 80%, white), var(--tq-gold) 55%, var(--tq-gold-deep));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 3px 0 var(--tq-gold-deep);
+}
+
+/* 골드 글로우 (헤딩/발견 강조) */
+.tq-glow {
+  text-shadow: 0 0 18px color-mix(in srgb, var(--tq-gold) 55%, transparent);
+}
+
+@keyframes tq-pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tq-jewel) 55%, transparent); }
+  100% { box-shadow: 0 0 0 14px transparent; }
+}
+.tq-pulse { animation: tq-pulse-ring 1.6s ease-out infinite; }
