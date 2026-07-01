@@ -13,7 +13,13 @@ import {
 } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from './client';
-import type { GeoPoint, Treasure, TreasureStatus } from '@/lib/types';
+import type {
+  GeoPoint,
+  RewardMode,
+  RouletteItem,
+  Treasure,
+  TreasureStatus,
+} from '@/lib/types';
 
 const millis = (v: unknown): number =>
   v && typeof (v as { toMillis?: () => number }).toMillis === 'function'
@@ -38,6 +44,8 @@ function mapTreasure(id: string, data: Record<string, unknown>): Treasure {
     createdByUid: (data.createdByUid as string) ?? '',
     status: (data.status as TreasureStatus) ?? 'active',
     assignedChildId: (data.assignedChildId as string) ?? null,
+    rewardMode: (data.rewardMode as Treasure['rewardMode']) ?? 'FIXED',
+    roulette: (data.roulette as Treasure['roulette']) ?? null,
     locationSource: 'MAP_PICK',
     verification: (data.verification as Treasure['verification']) ?? ['LIVE_GEOFENCE'],
     timeWindow: null,
@@ -66,6 +74,8 @@ export interface NewTreasureInput {
   radiusM: number; // 30~50
   amount: number;
   currency?: string;
+  rewardMode?: RewardMode;
+  rouletteItems?: RouletteItem[];
   hintPhotoUrl: string;
   title?: string;
   note?: string;
@@ -88,6 +98,11 @@ export async function createTreasure(
     createdByUid: input.createdByUid,
     status: 'active',
     assignedChildId: input.assignedChildId ?? null,
+    rewardMode: input.rewardMode ?? 'FIXED',
+    roulette:
+      input.rewardMode === 'ROULETTE' && input.rouletteItems?.length
+        ? { items: input.rouletteItems }
+        : null,
     // ── 확장 자리 (P1 기본값) ──
     locationSource: 'MAP_PICK',
     verification: ['LIVE_GEOFENCE'],
@@ -152,6 +167,8 @@ export interface TreasurePatch {
   note?: string | null;
   assignedChildId?: string | null;
   hintPhotoUrl?: string;
+  rewardMode?: RewardMode;
+  rouletteItems?: RouletteItem[];
 }
 
 /** 보물 수정. reward.amount 는 중첩 필드로 갱신. */
@@ -168,6 +185,13 @@ export async function updateTreasure(
   if (patch.note !== undefined) data.note = patch.note;
   if (patch.assignedChildId !== undefined) data.assignedChildId = patch.assignedChildId;
   if (patch.hintPhotoUrl !== undefined) data.hintPhotoUrl = patch.hintPhotoUrl;
+  if (patch.rewardMode !== undefined) {
+    data.rewardMode = patch.rewardMode;
+    data.roulette =
+      patch.rewardMode === 'ROULETTE' && patch.rouletteItems?.length
+        ? { items: patch.rouletteItems }
+        : null;
+  }
   await updateDoc(doc(db, 'families', familyId, 'treasures', treasureId), data);
 }
 

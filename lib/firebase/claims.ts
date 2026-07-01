@@ -33,6 +33,8 @@ function mapClaim(id: string, data: Record<string, unknown>): Claim {
     foundAt: millis(data.foundAt),
     foundLocation: (data.foundLocation as GeoPoint) ?? { lat: 0, lng: 0 },
     stepsToday: (data.stepsToday as number) ?? 0,
+    wonLabel: (data.wonLabel as string) ?? null,
+    wonAmount: (data.wonAmount as number) ?? null,
     certificateUrl: (data.certificateUrl as string) ?? null,
     notifyChannel: (data.notifyChannel as Claim['notifyChannel']) ?? 'KAKAO_SHARE',
     requestedAt: data.requestedAt ? millis(data.requestedAt) : null,
@@ -194,6 +196,19 @@ export async function listClaimsForFamily(familyId: string): Promise<Claim[]> {
     }),
   );
   return all.sort((a, b) => b.foundAt - a.foundAt);
+}
+
+/** 룰렛 당첨 결과 저장 (1회만 — 이미 있으면 덮어쓰지 않음). */
+export async function setClaimWonPrize(
+  familyId: string,
+  treasureId: string,
+  claimId: string,
+  won: { label: string; amount: number },
+): Promise<void> {
+  await updateDoc(
+    doc(db, 'families', familyId, 'treasures', treasureId, 'claims', claimId),
+    { wonLabel: won.label, wonAmount: won.amount },
+  );
 }
 
 /** 특정 자녀의 해당 보물 claim (발견 연출 페이지에서 사용). */

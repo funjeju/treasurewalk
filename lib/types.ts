@@ -72,6 +72,14 @@ export interface AllowanceRequest {
 
 export type RewardType = 'FIXED' | 'DISTANCE_SCALED' | 'STREAK_BONUS';
 export type TreasureStatus = 'active' | 'found' | 'expired';
+
+/** 보상 방식: 단순 용돈 or 룰렛(상품 추첨) */
+export type RewardMode = 'FIXED' | 'ROULETTE';
+/** 룰렛 한 칸: 상품 이름 + (있으면) 용돈 금액 */
+export interface RouletteItem {
+  label: string;
+  amount: number; // KRW, 0이면 비현금 상품
+}
 export type LocationSource = 'MAP_PICK' | 'EXIF_EXTRACT' | 'ROADVIEW_PICK';
 export type VerificationMethod =
   | 'LIVE_GEOFENCE'
@@ -85,6 +93,9 @@ export interface Treasure {
   location: GeoPoint;
   radiusM: number; // P1: 30~50
   reward: { type: RewardType; amount: number; currency: string };
+  /** 보상 방식 (기본 FIXED=단순 용돈). ROULETTE=룰렛 상품 추첨 */
+  rewardMode: RewardMode;
+  roulette?: { items: RouletteItem[] } | null;
   hintPhotoUrl: string;
   title?: string | null;
   note?: string | null;
@@ -113,6 +124,9 @@ export interface Claim {
   foundAt: number;
   foundLocation: GeoPoint;
   stepsToday?: number;
+  /** 룰렛 당첨 결과 (룰렛 보물일 때). */
+  wonLabel?: string | null;
+  wonAmount?: number | null;
   certificateUrl?: string | null;
   notifyChannel: NotifyChannel;
   requestedAt?: number | null;

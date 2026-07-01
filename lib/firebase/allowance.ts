@@ -73,6 +73,8 @@ export async function computeWallet(
       createdByUid: data.createdByUid,
       status: data.status,
       assignedChildId: data.assignedChildId ?? null,
+      rewardMode: data.rewardMode ?? 'FIXED',
+      roulette: data.roulette ?? null,
       locationSource: 'MAP_PICK',
       verification: data.verification ?? ['LIVE_GEOFENCE'],
       createdAt: millis(data.createdAt),
@@ -92,7 +94,13 @@ export async function computeWallet(
     claimsSnap.docs.forEach((c) => {
       const cd = c.data() as Partial<Claim>;
       if (cd.status === 'FOUND') {
-        const amt = tr.reward?.amount ?? 0;
+        // 룰렛 당첨 금액이 있으면 그것, 룰렛인데 아직 안 뽑았으면 0, 아니면 단순 용돈
+        const amt =
+          cd.wonAmount != null
+            ? cd.wonAmount
+            : tr.rewardMode === 'ROULETTE'
+              ? 0
+              : (tr.reward?.amount ?? 0);
         treasureAmount += amt;
         lines.push({
           treasureId: tid,
