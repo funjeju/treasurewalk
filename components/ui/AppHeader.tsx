@@ -26,6 +26,17 @@ export function AppHeader() {
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <LocaleSwitcher />
           {user && (
+            <Link
+              href="/dashboard"
+              aria-label={t('parentMode')}
+              title={t('parentMode')}
+              className="g-btn g-btn-glass g-btn-sm shrink-0"
+            >
+              <span aria-hidden>🏠</span>
+              <span className="hidden sm:inline">{t('parentMode')}</span>
+            </Link>
+          )}
+          {user && (
             <button
               type="button"
               aria-label={t('logout')}

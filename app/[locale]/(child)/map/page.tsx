@@ -60,6 +60,7 @@ export default function ChildMapPage() {
   const lastVibrate = useRef(0);
   // 기본 뷰는 제주도 전체. 내 위치 확대는 사용자가 📍 버튼으로.
   const [recenter, setRecenter] = useState<GeoPoint | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false); // 하단 걸음 시트 펼침
 
   // 걸음 목표 달성 축하 팝업
   const [milestone, setMilestone] = useState<Milestone | null>(null);
@@ -226,66 +227,90 @@ export default function ChildMapPage() {
           )}
         </div>
 
-        {/* 하단 시트 (탭바 위) */}
-        <div className="absolute inset-x-3 bottom-24 z-10 space-y-2">
-          {locationEnabled && nearest && <ProximityMeter distanceM={nearest.d} />}
-
-          {locationEnabled &&
-            (status === 'denied' || status === 'unsupported') && (
-              <p className="glass rounded-xl p-2 text-center text-xs font-bold text-[var(--g-red)]">
-                {status === 'denied' ? t('locationDenied') : t('locationUnsupported')}
-              </p>
-            )}
-
-          {/* 걸음 요약 */}
-          <div className="glass p-3">
-            <div className="flex items-center gap-3">
-              <span className="g-orb g-orb-steps g-orb-lg shrink-0">
-                <Icon name="steps" size={20} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-black leading-none">
-                    {steps.toLocaleString()}
-                  </span>
-                  <span className="text-xs font-bold text-[var(--g-dim)]">
-                    {tc('steps')}
-                  </span>
-                  {st.earnedAmount > 0 && (
-                    <span className="g-chip g-chip-gold ml-auto">
-                      <Icon name="coin" size={12} /> +{format.number(st.earnedAmount)}
-                      {tc('krw')}
+        {/* 하단: 걸음 숫자 pill (접힘) / 상세 시트 (펼침) — 탭바 화살표 위 */}
+        <div className="absolute inset-x-3 bottom-[104px] z-10">
+          {!sheetOpen ? (
+            <button
+              type="button"
+              onClick={() => setSheetOpen(true)}
+              className="glass mx-auto flex items-center gap-2 rounded-full px-4 py-2 font-extrabold active:scale-95"
+            >
+              <Icon name="steps" size={18} />
+              <span className="text-lg leading-none">{steps.toLocaleString()}</span>
+              <span className="text-xs font-bold text-[var(--g-dim)]">{tc('steps')}</span>
+              {st.earnedAmount > 0 && (
+                <span className="g-chip g-chip-gold">
+                  <Icon name="coin" size={12} /> +{format.number(st.earnedAmount)}
+                  {tc('krw')}
+                </span>
+              )}
+              <span aria-hidden className="text-[var(--g-dim)]">▴</span>
+            </button>
+          ) : (
+            <div className="glass space-y-3 p-4">
+              <div className="flex items-start gap-3">
+                <span className="g-orb g-orb-steps g-orb-lg shrink-0">
+                  <Icon name="steps" size={20} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black leading-none">
+                      {steps.toLocaleString()}
                     </span>
-                  )}
+                    <span className="text-xs font-bold text-[var(--g-dim)]">
+                      {tc('steps')}
+                    </span>
+                    {st.earnedAmount > 0 && (
+                      <span className="g-chip g-chip-gold ml-auto">
+                        <Icon name="coin" size={12} /> +{format.number(st.earnedAmount)}
+                        {tc('krw')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <Progress value={st.progress} className="flex-1" />
+                    <span className="shrink-0 text-[0.65rem] font-bold text-[var(--g-dim)]">
+                      {st.next
+                        ? th('nextReward', {
+                            steps: format.number(st.next.steps),
+                            amount: format.number(st.next.amount),
+                          })
+                        : th('maxGoal')}
+                    </span>
+                  </div>
                 </div>
-                <div className="mt-1 flex items-center gap-2">
-                  <Progress value={st.progress} className="flex-1" />
-                  <span className="shrink-0 text-[0.65rem] font-bold text-[var(--g-dim)]">
-                    {st.next
-                      ? th('nextReward', {
-                          steps: format.number(st.next.steps),
-                          amount: format.number(st.next.amount),
-                        })
-                      : th('maxGoal')}
-                  </span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setSheetOpen(false)}
+                  aria-label={tc('close')}
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[rgba(255,255,255,0.08)] text-[var(--g-dim)] active:scale-95"
+                >
+                  ✕
+                </button>
               </div>
-            </div>
-            {!stepsActive && (
-              <button
-                type="button"
-                className="g-btn g-btn-gold g-btn-sm g-btn-block mt-2"
-                onClick={startSteps}
-              >
-                <Icon name="steps" size={14} /> {th('startCounter')}
-              </button>
-            )}
-          </div>
 
-          {locationEnabled && treasures.length === 0 && (
-            <p className="glass rounded-full px-3 py-1.5 text-center text-xs text-[var(--g-dim)]">
-              {t('noTreasures')}
-            </p>
+              {!stepsActive && (
+                <button
+                  type="button"
+                  className="g-btn g-btn-gold g-btn-sm g-btn-block"
+                  onClick={startSteps}
+                >
+                  <Icon name="steps" size={14} /> {th('startCounter')}
+                </button>
+              )}
+
+              {locationEnabled && nearest && <ProximityMeter distanceM={nearest.d} />}
+
+              {locationEnabled &&
+                (status === 'denied' || status === 'unsupported') && (
+                  <p className="rounded-xl bg-[rgba(255,106,95,0.14)] p-2 text-center text-xs font-bold text-[var(--g-red)]">
+                    {status === 'denied' ? t('locationDenied') : t('locationUnsupported')}
+                  </p>
+                )}
+              {locationEnabled && treasures.length === 0 && (
+                <p className="text-center text-xs text-[var(--g-dim)]">{t('noTreasures')}</p>
+              )}
+            </div>
           )}
         </div>
 
