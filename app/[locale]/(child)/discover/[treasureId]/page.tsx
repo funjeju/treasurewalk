@@ -4,8 +4,7 @@ import { use, useEffect, useState } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { TreasureChest } from '@/components/discover/TreasureChest';
-import { RewardBurst } from '@/components/discover/RewardBurst';
+import { TreasureReveal } from '@/components/discover/TreasureReveal';
 import { getTreasure } from '@/lib/firebase/treasures';
 import {
   getChildClaim,
@@ -105,8 +104,6 @@ export default function DiscoverPage({
   return (
     <div className="grid min-h-[70vh] place-items-center">
       <div className="relative w-full max-w-md text-center">
-        <RewardBurst play={opened} />
-
         <h1
           className={`text-3xl font-extrabold text-[var(--tq-gold-deep)] tq-glow ${
             opened ? 'tq-pop' : ''
@@ -118,23 +115,25 @@ export default function DiscoverPage({
           <p className="mt-1 text-[var(--tq-ink-soft)]">{treasure.title}</p>
         )}
 
-        <div className="my-4 grid place-items-center">
-          <TreasureChest opened={opened} onOpen={handleOpen} />
+        <div className="my-2">
+          <TreasureReveal opened={opened} onOpen={handleOpen} />
         </div>
 
         {!opened && (
-          <p className="text-[var(--tq-ink-soft)]">{t('tapToOpen')}</p>
+          <p className="animate-pulse font-bold text-[var(--tq-gold-deep)]">
+            👆 {t('tapToOpen')}
+          </p>
         )}
 
         {opened && treasure && (
           <div className="tq-pop">
-            <p className="text-2xl font-extrabold text-[var(--tq-jewel)]">
+            <p className="tq-amount text-5xl">
               {t('reward', {
-                amount: `${format.number(treasure.reward.amount)} ${tc('krw')}`,
+                amount: `${format.number(treasure.reward.amount)}${tc('krw')}`,
               })}
             </p>
-            <p className="mt-1 text-[var(--tq-gold-deep)]">
-              {t('coinsEarned', { coins: COIN_PER_FIND })}
+            <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-[var(--tq-surface-2)] px-3 py-1 font-bold text-[var(--tq-gold-deep)]">
+              🪙 {t('coinsEarned', { coins: COIN_PER_FIND })}
             </p>
 
             <div className="mt-6 flex flex-col gap-2">

@@ -427,3 +427,157 @@ a {
   100% { box-shadow: 0 0 0 14px transparent; }
 }
 .tq-pulse { animation: tq-pulse-ring 1.6s ease-out infinite; }
+
+/* ══ 발견 연출 (히어로 장면) — SVG 상자 + 빛기둥 + 코인 분수 ══ */
+.tq-reveal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 300px;
+  isolation: isolate;
+}
+
+/* 회전하는 빛기둥(god rays) */
+.tq-rays {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 460px;
+  height: 460px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--tq-gold) 55%, transparent) 0deg 6deg,
+    transparent 6deg 24deg,
+    color-mix(in srgb, var(--tq-gold) 40%, transparent) 24deg 30deg,
+    transparent 30deg 48deg
+  );
+  -webkit-mask: radial-gradient(circle, #000 8%, transparent 62%);
+  mask: radial-gradient(circle, #000 8%, transparent 62%);
+  opacity: 0;
+  transition: opacity 0.5s ease 0.2s;
+  animation: tq-spin360 14s linear infinite;
+  z-index: -2;
+}
+.tq-reveal[data-open='true'] .tq-rays { opacity: 0.7; }
+
+/* 중앙 골드 광원 */
+.tq-glowpool {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--tq-gold) 70%, transparent), transparent 65%);
+  opacity: 0.35;
+  z-index: -1;
+  transition: opacity 0.5s ease;
+}
+.tq-reveal[data-open='true'] .tq-glowpool {
+  opacity: 0.9;
+  animation: tq-glow-pulse 2.2s ease-in-out infinite;
+}
+
+/* 상자 */
+.tq-chest-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 190px;
+  height: 170px;
+  padding: 0;
+  filter: drop-shadow(0 10px 14px rgb(44 30 8 / 0.4));
+}
+.tq-reveal[data-open='false'] .tq-chest-btn { animation: tq-chest-bob 2s ease-in-out infinite; }
+.tq-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 92%;
+  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.5, 1);
+}
+.tq-chest-btn[data-open='true'] .tq-lid { transform: rotate(-122deg); }
+.tq-chest-inner { opacity: 0; transition: opacity 0.3s ease 0.25s; }
+.tq-chest-btn[data-open='true'] .tq-chest-inner { opacity: 1; }
+
+/* 코인 분수 (중첩: x축 이동 / y축 포물선 / 앞면 회전) */
+.tq-fountain {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.tq-coin-x {
+  position: absolute;
+  animation: tq-coin-x 1.15s cubic-bezier(0.2, 0.5, 0.6, 1) both;
+  animation-delay: var(--d, 0s);
+}
+.tq-coin-y {
+  display: block;
+  animation: tq-coin-y 1.15s cubic-bezier(0.2, 0.7, 0.4, 1) both;
+  animation-delay: var(--d, 0s);
+}
+.tq-coin-face {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff2c2, var(--tq-gold) 55%, var(--tq-gold-deep));
+  border: 2px solid #fff6d8;
+  box-shadow: inset 0 -2px 3px rgb(0 0 0 / 0.25);
+  animation: tq-coin-flip 0.5s linear infinite;
+}
+@keyframes tq-coin-x { 0% { transform: translateX(0); opacity: 0; } 12% { opacity: 1; } 100% { transform: translateX(var(--tx)); opacity: 0; } }
+@keyframes tq-coin-y { 0% { transform: translateY(0); } 42% { transform: translateY(var(--peak, -120px)); } 100% { transform: translateY(90px); } }
+@keyframes tq-coin-flip { to { transform: rotateY(360deg); } }
+
+/* 콘페티 */
+.tq-confetti {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  z-index: 3;
+  pointer-events: none;
+}
+.tq-confetti-piece {
+  position: absolute;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  animation: tq-confetti-fall 1.5s ease-in both;
+  animation-delay: var(--d, 0s);
+}
+@keyframes tq-confetti-fall {
+  0% { transform: translate(0, -10px) rotate(0); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translate(var(--cx), var(--cy)) rotate(var(--cr)); opacity: 0; }
+}
+
+/* 반짝임 */
+.tq-spark {
+  position: absolute;
+  font-size: 1rem;
+  z-index: 3;
+  pointer-events: none;
+  animation: tq-spark-tw 1.4s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes tq-spin360 { to { transform: rotate(360deg); } }
+@keyframes tq-glow-pulse { 0%, 100% { opacity: 0.6; transform: scale(1); } 50% { opacity: 0.95; transform: scale(1.08); } }
+@keyframes tq-chest-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes tq-spark-tw { 0%, 100% { opacity: 0; transform: scale(0.4); } 50% { opacity: 1; transform: scale(1); } }
+
+/* 금액 팝 */
+.tq-amount {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  background: linear-gradient(180deg, #fff2c2, var(--tq-gold) 55%, var(--tq-gold-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 10px color-mix(in srgb, var(--tq-gold) 45%, transparent);
+  animation: tq-amount-pop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.5) both;
+}
+@keyframes tq-amount-pop { 0% { transform: scale(0.3) translateY(20px); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
