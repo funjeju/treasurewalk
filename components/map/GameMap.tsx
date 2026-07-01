@@ -2,11 +2,28 @@
 
 import { useMemo } from 'react';
 import Map, { Marker, Source, Layer, NavigationControl } from 'react-map-gl/maplibre';
+import type { StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { GeoPoint, Treasure } from '@/lib/types';
 import { circlePolygon } from '@/lib/geo/circle';
 
-const DEMO_STYLE = 'https://demotiles.maplibre.org/style.json';
+/**
+ * 기본 지도 스타일 — 키 없이 쓰는 OpenStreetMap 래스터 (거리 수준 타일 O).
+ * 게임 스킨(양피지 벡터, docs/05 §6)은 NEXT_PUBLIC_MAP_STYLE_URL 로 교체.
+ */
+const OSM_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    osm: {
+      type: 'raster',
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+      maxzoom: 19,
+    },
+  },
+  layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+};
 
 export interface GameMapProps {
   center: GeoPoint;
@@ -37,7 +54,8 @@ export function GameMap({
   onTreasureClick,
   className,
 }: GameMapProps) {
-  const styleUrl = process.env.NEXT_PUBLIC_MAP_STYLE_URL || DEMO_STYLE;
+  const mapStyle: string | StyleSpecification =
+    process.env.NEXT_PUBLIC_MAP_STYLE_URL || OSM_STYLE;
 
   const pickCircle = useMemo(
     () => (pickMode ? circlePolygon(center, pickRadiusM) : null),
@@ -52,7 +70,7 @@ export function GameMap({
           latitude: center.lat,
           zoom,
         }}
-        mapStyle={styleUrl}
+        mapStyle={mapStyle}
         style={{ width: '100%', height: '100%', borderRadius: 18 }}
         onClick={(e) => {
           if (pickMode && onPick) {
