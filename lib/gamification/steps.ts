@@ -1,16 +1,17 @@
 /**
- * 걸음 목표 → 용돈 차등 보상.
+ * 이동 거리 목표 → 용돈 차등 보상 (GPS 거리 기준, 흔들기 무관).
  * 부모가 가족 단위로 목표/금액을 설정. 자녀가 목표 도달 시 용돈 요청.
+ * StepGoal.steps 필드는 이제 "미터(distance)" 를 의미한다(하위호환 위해 필드명 유지).
  */
 export interface StepGoal {
-  steps: number;
+  steps: number; // 실제 의미: 미터
   amount: number; // KRW
 }
 
 export const DEFAULT_STEP_GOALS: StepGoal[] = [
-  { steps: 5000, amount: 500 },
-  { steps: 10000, amount: 1000 },
-  { steps: 20000, amount: 2000 },
+  { steps: 1000, amount: 500 },
+  { steps: 3000, amount: 1000 },
+  { steps: 5000, amount: 2000 },
 ];
 
 /** 목표를 걸음수 오름차순 정규화. */

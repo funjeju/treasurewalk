@@ -11,7 +11,7 @@ import { StepMilestone, type Milestone } from '@/components/hud/StepMilestone';
 import { ChildSwitcher } from '@/components/child/ChildSwitcher';
 import { stepStatus } from '@/lib/gamification/steps';
 import { useGeolocation } from '@/lib/hooks/useGeolocation';
-import { useStepCounter } from '@/lib/hooks/useStepCounter';
+import { useRouteTracker } from '@/lib/hooks/useRouteTracker';
 import { listActiveTreasures } from '@/lib/firebase/treasures';
 import { updateChild } from '@/lib/firebase/families';
 import { createFoundClaim } from '@/lib/firebase/claims';
@@ -40,22 +40,23 @@ export default function ChildMapPage() {
   const locationEnabled = child?.locationEnabled ?? false;
 
   const { position, status } = useGeolocation(locationEnabled);
-  const {
-    steps,
-    active: stepsActive,
-    needsPermission,
-    start: startSteps,
-  } = useStepCounter(child?.id ?? null);
+  // GPS 거리·동선 트래커 (흔들기 무관)
+  const { distanceM: todayDistance, path } = useRouteTracker(
+    family?.id ?? null,
+    child?.id ?? null,
+    position,
+    locationEnabled,
+  );
   const triggered = useRef<Set<string>>(new Set());
   const lastVibrate = useRef(0);
   // 기본 뷰는 제주도 전체. 내 위치 확대는 사용자가 📍 버튼으로.
   const [recenter, setRecenter] = useState<GeoPoint | null>(null);
 
-  // 걸음 목표 달성 축하 팝업
+  // 거리 목표 달성 축하 팝업
   const [milestone, setMilestone] = useState<Milestone | null>(null);
   const lastReached = useRef(-1);
   useEffect(() => {
-    const st = stepStatus(steps, family?.stepGoals);
+    const st = stepStatus(todayDistance, family?.stepGoals);
     if (lastReached.current < 0) {
       lastReached.current = st.reachedIndex; // 최초 로드 시 기준만 잡고 팝업 X
       return;
@@ -63,9 +64,9 @@ export default function ChildMapPage() {
     if (st.reachedIndex > lastReached.current) {
       const g = st.goals[st.reachedIndex];
       lastReached.current = st.reachedIndex;
-      setMilestone({ steps: g.steps, amount: g.amount });
+      setMilestone({ distanceM: g.steps, amount: g.amount });
     }
-  }, [steps, family?.stepGoals]);
+  }, [todayDistance, family?.stepGoals]);
 
   // active 보물 로드
   const loadTreasures = useCallback(async () => {
@@ -101,7 +102,7 @@ export default function ChildMapPage() {
         triggered.current.add(tr.id);
         // 강한 햅틱
         navigator.vibrate?.([60, 30, 120]);
-        createFoundClaim(family.id, tr, child, position, steps)
+        createFoundClaim(family.id, tr, child, position, Math.round(todayDistance))
           .then(() => {
             router.push(`/discover/${tr.id}`);
           })
@@ -112,7 +113,7 @@ export default function ChildMapPage() {
         break;
       }
     }
-  }, [position, treasures, family, child, steps, router]);
+  }, [position, treasures, family, child, todayDistance, router]);
 
   // 근접 햅틱 (가까울수록 자주)
   useEffect(() => {
@@ -130,7 +131,6 @@ export default function ChildMapPage() {
   async function enableLocation() {
     if (!family || !child) return;
     await updateChild(family.id, child.id, { locationEnabled: true });
-    await startSteps(); // 사용자 제스처 컨텍스트에서 만보기 권한 요청
     await refreshFamily();
   }
 
@@ -152,18 +152,14 @@ export default function ChildMapPage() {
     <div className="space-y-3">
       <StepMilestone milestone={milestone} onDone={() => setMilestone(null)} />
 
-      {/* 탐험가 선택 + HUD */}
+      {/* 탐험가 선택 + 동선 기록 */}
       <div className="flex items-center justify-between gap-2">
         <ChildSwitcher />
+        <Link href="/routes" className="g-btn g-btn-glass g-btn-sm">
+          🗺️ {tn('routes')}
+        </Link>
       </div>
-      <Hud
-        child={child}
-        steps={steps}
-        goals={family?.stepGoals}
-        stepsActive={stepsActive}
-        needsPermission={needsPermission}
-        onStartSteps={startSteps}
-      />
+      <Hud child={child} distanceM={todayDistance} goals={family?.stepGoals} />
 
       {/* 위치 사용 중 인디케이터 (docs/07 A.2-1) */}
       {locationEnabled && (
@@ -180,6 +176,7 @@ export default function ChildMapPage() {
             center={mapCenter}
             zoom={JEJU_ZOOM}
             recenter={recenter}
+            path={path}
             treasures={treasures}
             userLocation={position}
             onLocate={

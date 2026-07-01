@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { ChildSwitcher } from '@/components/child/ChildSwitcher';
-import { useStepCounter } from '@/lib/hooks/useStepCounter';
+import { getTrack } from '@/lib/firebase/tracks';
+import { formatDistanceM } from '@/lib/geo/format';
 import {
   computeWallet,
   requestAllowance,
@@ -20,8 +21,8 @@ export default function WalletPage() {
   const format = useFormatter();
   const { family, children, activeChildId } = useAuth();
   const child = children.find((c) => c.id === activeChildId) ?? null;
-  const { steps } = useStepCounter(child?.id ?? null);
 
+  const [todayDistance, setTodayDistance] = useState(0);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [requests, setRequests] = useState<AllowanceRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,8 +33,12 @@ export default function WalletPage() {
     if (!family || !child) return;
     setLoading(true);
     try {
+      const today = new Date().toISOString().slice(0, 10);
+      const track = await getTrack(family.id, child.id, today);
+      const dist = track?.distanceM ?? 0;
+      setTodayDistance(dist);
       const [w, r] = await Promise.all([
-        computeWallet(family.id, child, steps, family.stepGoals),
+        computeWallet(family.id, child, dist, family.stepGoals),
         listAllowanceRequests(family.id),
       ]);
       setWallet(w);
@@ -43,7 +48,7 @@ export default function WalletPage() {
     } finally {
       setLoading(false);
     }
-  }, [family, child, steps]);
+  }, [family, child]);
 
   useEffect(() => {
     load();
@@ -53,7 +58,7 @@ export default function WalletPage() {
     if (!family || !child || !wallet) return;
     setBusy(true);
     try {
-      const id = await requestAllowance(family.id, child, wallet, steps);
+      const id = await requestAllowance(family.id, child, wallet, todayDistance);
       if (id) {
         setJustRequested(true);
         navigator.vibrate?.([40, 30, 80]);
@@ -103,7 +108,7 @@ export default function WalletPage() {
                 <span className="inline-flex items-center gap-2 text-sm">
                   <Icon name="steps" size={18} /> {t('fromSteps')}{' '}
                   <span className="text-[var(--g-dim)]">
-                    {t('stepsLine', { steps: format.number(steps) })}
+                    {t('stepsLine', { steps: formatDistanceM(todayDistance) })}
                   </span>
                 </span>
                 <span className="font-extrabold">

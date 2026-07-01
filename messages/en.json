@@ -25,6 +25,7 @@
     "map": "Explore",
     "collection": "Collection",
     "wallet": "Wallet",
+    "routes": "Routes",
     "logout": "Log out",
     "parentMode": "Parent mode",
     "childMode": "Kid mode"
@@ -36,20 +37,14 @@
     "dark": "Dark"
   },
   "hud": {
-    "nextGoal": "Next {steps}",
-    "nextReward": "Next {steps} · +{amount}",
+    "todayDistance": "today",
+    "nextReward": "Next {dist} · +{amount}",
     "maxGoal": "Top goal reached!",
-    "goalReached": "{steps} steps reached!",
-    "goalRewardEarned": "+{amount} earned",
-    "startCounter": "Start step counter",
-    "counting": "Counting steps",
-    "permissionDenied": "Motion sensor permission needed. Please allow it in your browser settings.",
-    "stepGoalsTitle": "Step goal rewards",
-    "stepGoalsDesc": "Set a different allowance for each step goal.",
-    "goalSteps": "Steps",
-    "goalAmount": "Allowance",
-    "requestStepReward": "Request step allowance",
-    "stepRewardRequested": "Step allowance requested"
+    "goalReached": "{dist} walked!",
+    "stepGoalsTitle": "Distance goal rewards",
+    "stepGoalsDesc": "Set a different allowance for each distance goal (m).",
+    "goalSteps": "Distance (m)",
+    "goalAmount": "Allowance"
   },
   "auth": {
     "loginTitle": "Log in to start exploring",
@@ -171,12 +166,20 @@
     "backToMap": "Back to map",
     "alreadyFound": "You already found this treasure."
   },
+  "routes": {
+    "title": "Route history",
+    "subtitle": "See the path you walked on each day.",
+    "distance": "Distance",
+    "empty": "No routes recorded yet — turn on location and take a walk.",
+    "noRouteForDay": "No movement recorded on this day.",
+    "today": "Today"
+  },
   "wallet": {
     "title": "Allowance wallet",
     "total": "Allowance to receive",
     "fromTreasures": "Found treasures",
-    "fromSteps": "Step goals",
-    "stepsLine": "{steps} steps reached",
+    "fromSteps": "Distance goals",
+    "stepsLine": "{steps} walked",
     "request": "Ask for allowance",
     "requesting": "Requesting…",
     "requested": "Allowance requested! Waiting for your parent.",

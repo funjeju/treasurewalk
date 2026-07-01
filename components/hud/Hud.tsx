@@ -4,33 +4,28 @@ import { useTranslations, useFormatter } from 'next-intl';
 import type { Child, StepGoal } from '@/lib/types';
 import { levelProgress } from '@/lib/gamification/levels';
 import { stepStatus } from '@/lib/gamification/steps';
+import { formatDistanceM } from '@/lib/geo/format';
 import { GlassCard, Avatar, Progress, Icon } from '@/components/kit';
 
 /**
  * 게임 HUD (키트).
  * 상단: 아바타·레벨·XP + (작게) 코인/연속.
- * 하단: 만보기 섹션을 한 줄로 크게 강조 — 오늘 걸음 · 다음 목표 · 목표별 용돈.
+ * 하단: 오늘 이동거리(GPS) 강조 — 다음 목표까지 진행 + 획득 용돈.
  */
 export function Hud({
   child,
-  steps,
+  distanceM,
   goals,
-  stepsActive,
-  needsPermission,
-  onStartSteps,
 }: {
   child: Child;
-  steps: number;
+  distanceM: number;
   goals?: StepGoal[];
-  stepsActive: boolean;
-  needsPermission: boolean;
-  onStartSteps: () => void;
 }) {
   const t = useTranslations('common');
   const th = useTranslations('hud');
   const format = useFormatter();
   const progress = levelProgress(child.xp);
-  const st = stepStatus(steps, goals);
+  const st = stepStatus(distanceM, goals); // goals.steps = 미터
 
   return (
     <div className="space-y-2">
@@ -55,7 +50,7 @@ export function Hud({
         </div>
       </GlassCard>
 
-      {/* 만보기 섹션 — 강조 */}
+      {/* 오늘 이동거리 — 강조 */}
       <GlassCard className="p-3">
         <div className="flex items-center gap-3">
           <span className="g-orb g-orb-steps g-orb-lg shrink-0">
@@ -64,9 +59,11 @@ export function Hud({
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-black leading-none">
-                {steps.toLocaleString()}
+                {formatDistanceM(distanceM)}
               </span>
-              <span className="text-xs font-bold text-[var(--g-dim)]">{t('steps')}</span>
+              <span className="text-xs font-bold text-[var(--g-dim)]">
+                {th('todayDistance')}
+              </span>
               {st.earnedAmount > 0 && (
                 <span className="g-chip g-chip-gold ml-auto">
                   <Icon name="coin" size={13} /> +{format.number(st.earnedAmount)}
@@ -79,7 +76,7 @@ export function Hud({
               <span className="shrink-0 text-[0.68rem] font-bold text-[var(--g-dim)]">
                 {st.next
                   ? th('nextReward', {
-                      steps: format.number(st.next.steps),
+                      dist: formatDistanceM(st.next.steps),
                       amount: format.number(st.next.amount),
                     })
                   : th('maxGoal')}
@@ -87,30 +84,6 @@ export function Hud({
             </div>
           </div>
         </div>
-
-        {/* 측정 시작 (iOS 모션 권한은 사용자 제스처 필요) */}
-        {!stepsActive && (
-          <div className="mt-3">
-            <button
-              type="button"
-              className="g-btn g-btn-gold g-btn-sm g-btn-block"
-              onClick={onStartSteps}
-            >
-              <Icon name="steps" size={16} /> {th('startCounter')}
-            </button>
-            {needsPermission && (
-              <p className="mt-1.5 text-center text-[0.7rem] text-[var(--g-red)]">
-                {th('permissionDenied')}
-              </p>
-            )}
-          </div>
-        )}
-        {stepsActive && (
-          <p className="mt-2 flex items-center justify-center gap-1 text-[0.72rem] font-bold text-[var(--g-green)]">
-            <span className="tq-pulse inline-block h-2 w-2 rounded-full bg-[var(--g-green)]" />
-            {th('counting')}
-          </p>
-        )}
       </GlassCard>
     </div>
   );

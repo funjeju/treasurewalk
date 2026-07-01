@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Map, {
   Marker,
   Source,
@@ -37,6 +37,10 @@ export interface GameMapProps {
   zoom?: number;
   /** 카메라를 이 좌표로 이동(flyTo). 값이 바뀔 때마다 이동. */
   recenter?: GeoPoint | null;
+  /** 이동 동선(폴리라인) */
+  path?: GeoPoint[];
+  /** path 전체가 보이도록 카메라 맞춤 */
+  fitPath?: boolean;
   /** 보물 핀들 */
   treasures?: Treasure[];
   /** 자녀 현재 위치 마커 */
@@ -58,6 +62,8 @@ export function GameMap({
   center,
   zoom = 16,
   recenter,
+  path,
+  fitPath = false,
   treasures = [],
   userLocation,
   pickMode = false,
@@ -68,6 +74,7 @@ export function GameMap({
   className,
 }: GameMapProps) {
   const mapRef = useRef<MapRef | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const mapStyle: string | StyleSpecification =
     process.env.NEXT_PUBLIC_MAP_STYLE_URL || OSM_STYLE;
 
@@ -75,6 +82,39 @@ export function GameMap({
     () => (pickMode ? circlePolygon(center, pickRadiusM) : null),
     [pickMode, center, pickRadiusM],
   );
+
+  const pathLine = useMemo<GeoJSON.Feature<GeoJSON.LineString> | null>(() => {
+    if (!path || path.length < 2) return null;
+    return {
+      type: 'Feature',
+      properties: {},
+      geometry: { type: 'LineString', coordinates: path.map((p) => [p.lng, p.lat]) },
+    };
+  }, [path]);
+
+  // path 전체가 보이도록 카메라 맞춤 (지도 로드 완료 후에도 재시도)
+  useEffect(() => {
+    if (!fitPath || !mapReady || !path || path.length < 2) return;
+    const m = mapRef.current;
+    if (!m) return;
+    let minLng = 180,
+      minLat = 90,
+      maxLng = -180,
+      maxLat = -90;
+    for (const p of path) {
+      minLng = Math.min(minLng, p.lng);
+      maxLng = Math.max(maxLng, p.lng);
+      minLat = Math.min(minLat, p.lat);
+      maxLat = Math.max(maxLat, p.lat);
+    }
+    m.fitBounds(
+      [
+        [minLng, minLat],
+        [maxLng, maxLat],
+      ],
+      { padding: 50, duration: 600, maxZoom: 17 },
+    );
+  }, [fitPath, path, mapReady]);
 
   // recenter 값이 바뀌면 카메라 이동 (initialViewState 는 최초 1회만 적용되므로)
   useEffect(() => {
@@ -96,11 +136,30 @@ export function GameMap({
         initialViewState={{ longitude: center.lng, latitude: center.lat, zoom }}
         mapStyle={mapStyle}
         style={{ width: '100%', height: '100%' }}
+        onLoad={() => setMapReady(true)}
         onClick={(e) => {
           if (pickMode && onPick) onPick({ lat: e.lngLat.lat, lng: e.lngLat.lng });
         }}
       >
         <NavigationControl position="top-right" showCompass={false} />
+
+        {/* 이동 동선 */}
+        {pathLine && (
+          <Source id="route-line" type="geojson" data={pathLine}>
+            <Layer
+              id="route-line-glow"
+              type="line"
+              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+              paint={{ 'line-color': '#f2c75a', 'line-width': 9, 'line-opacity': 0.25, 'line-blur': 4 }}
+            />
+            <Layer
+              id="route-line-core"
+              type="line"
+              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+              paint={{ 'line-color': '#f2c75a', 'line-width': 4 }}
+            />
+          </Source>
+        )}
 
         {/* 보물별 발견 반경 — 상태에 따라 색 구분 (active=골드, found=에메랄드) */}
         {treasures.map((t) => {
