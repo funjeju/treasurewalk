@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { GameMapDynamic } from '@/components/map/GameMapDynamic';
+import { NumberField } from '@/components/kit';
 import {
   createTreasure,
   updateTreasure,
@@ -248,14 +249,11 @@ export function TreasureForm({ edit }: { edit?: Treasure }) {
             <div className="mt-3">
               <p className="mb-2 text-sm text-[var(--tq-ink-soft)]">{t('rewardHint')}</p>
               <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={0}
-                  step={100}
+                <NumberField
                   value={amount}
-                  onChange={(e) => setAmount(Number(e.target.value))}
+                  onChange={setAmount}
                   className="tq-input max-w-40"
-                  aria-label={t('rewardAmount')}
+                  ariaLabel={t('rewardAmount')}
                 />
                 <span className="font-bold">{tc('krw')}</span>
               </div>
@@ -272,14 +270,11 @@ export function TreasureForm({ edit }: { edit?: Treasure }) {
                     onChange={(e) => setItem(i, 'label', e.target.value)}
                     aria-label={`${t('itemPlaceholder', { n: i + 1 })}`}
                   />
-                  <input
-                    type="number"
-                    min={0}
-                    step={100}
-                    className="tq-input w-24"
+                  <NumberField
                     value={it.amount}
-                    onChange={(e) => setItem(i, 'amount', Number(e.target.value))}
-                    aria-label={t('itemAmount')}
+                    onChange={(n) => setItem(i, 'amount', n)}
+                    className="tq-input w-24"
+                    ariaLabel={t('itemAmount')}
                   />
                   {rouletteItems.length > MIN_ITEMS && (
                     <button

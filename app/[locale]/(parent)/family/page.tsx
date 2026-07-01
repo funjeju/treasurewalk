@@ -11,6 +11,7 @@ import {
 } from '@/lib/firebase/families';
 import { listActivity } from '@/lib/firebase/activity';
 import { normalizeGoals } from '@/lib/gamification/steps';
+import { NumberField } from '@/components/kit';
 import type { ActivityEvent, StepGoal } from '@/lib/types';
 
 export default function FamilyPage() {
@@ -30,6 +31,25 @@ export default function FamilyPage() {
       await refreshFamily();
     } finally {
       setCodeBusy(null);
+    }
+  }
+
+  const [copied, setCopied] = useState<string | null>(null);
+  async function shareCode(childName: string, code: string) {
+    const url =
+      typeof window !== 'undefined' ? window.location.origin : 'treasurewalk-beta.vercel.app';
+    const text = t('shareText', { name: childName, code, url });
+    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+    try {
+      if (nav.share) {
+        await nav.share({ title: t('joinCode'), text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        setCopied(code);
+        setTimeout(() => setCopied(null), 1800);
+      }
+    } catch {
+      /* 취소/실패 무시 */
     }
   }
   const [goals, setGoals] = useState<StepGoal[]>([]);
@@ -159,9 +179,18 @@ export default function FamilyPage() {
                       {t('joinCodeNone')}
                     </span>
                   )}
+                  {c.joinCode && (
+                    <button
+                      type="button"
+                      className="tq-btn tq-btn-primary ml-auto text-sm"
+                      onClick={() => shareCode(c.displayName, c.joinCode!)}
+                    >
+                      📤 {copied === c.joinCode ? t('joinCodeCopied') : t('joinCodeShare')}
+                    </button>
+                  )}
                   <button
                     type="button"
-                    className="tq-btn tq-btn-secondary ml-auto text-sm"
+                    className={`tq-btn tq-btn-secondary text-sm ${c.joinCode ? '' : 'ml-auto'}`}
                     onClick={() => issueCode(c.id, c.joinCode)}
                     disabled={codeBusy === c.id}
                   >
@@ -188,24 +217,20 @@ export default function FamilyPage() {
           </div>
           {goals.map((g, i) => (
             <div key={i} className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                step={1000}
+              <NumberField
                 value={g.steps}
-                onChange={(e) => setGoal(i, 'steps', Number(e.target.value))}
+                step={1000}
+                onChange={(n) => setGoal(i, 'steps', n)}
                 className="tq-input flex-1"
-                aria-label={`${th('goalSteps')} ${i + 1}`}
+                ariaLabel={`${th('goalSteps')} ${i + 1}`}
               />
               <span className="text-[var(--tq-ink-soft)]">→</span>
-              <input
-                type="number"
-                min={0}
-                step={100}
+              <NumberField
                 value={g.amount}
-                onChange={(e) => setGoal(i, 'amount', Number(e.target.value))}
+                step={100}
+                onChange={(n) => setGoal(i, 'amount', n)}
                 className="tq-input flex-1"
-                aria-label={`${th('goalAmount')} ${i + 1}`}
+                ariaLabel={`${th('goalAmount')} ${i + 1}`}
               />
             </div>
           ))}

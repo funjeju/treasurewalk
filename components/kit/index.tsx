@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 export { Icon, type IconName } from './Icon';
+export { NumberField } from './NumberField';
 import { Icon } from './Icon';
 
 /**
