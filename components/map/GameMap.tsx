@@ -79,8 +79,12 @@ export function GameMap({
 }: GameMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(zoom);
   const mapStyle: string | StyleSpecification =
     process.env.NEXT_PUBLIC_MAP_STYLE_URL || OSM_STYLE;
+
+  // 줌에 따라 마커 크기 조절 (멀리 보면 작게, 가까이 보면 크게)
+  const markerScale = Math.max(0.42, Math.min(1, 0.42 + (zoomLevel - 10) * 0.116));
 
   const pickCircle = useMemo(
     () => (pickMode ? circlePolygon(center, pickRadiusM) : null),
@@ -140,7 +144,11 @@ export function GameMap({
         initialViewState={{ longitude: center.lng, latitude: center.lat, zoom }}
         mapStyle={mapStyle}
         style={{ width: '100%', height: '100%' }}
-        onLoad={() => setMapReady(true)}
+        onLoad={(e) => {
+          setMapReady(true);
+          setZoomLevel(e.target.getZoom());
+        }}
+        onMove={(e) => setZoomLevel(e.viewState.zoom)}
         onClick={(e) => {
           if (pickMode && onPick) onPick({ lat: e.lngLat.lat, lng: e.lngLat.lng });
         }}
@@ -201,14 +209,26 @@ export function GameMap({
             anchor="bottom"
             onClick={() => onTreasureClick?.(t)}
           >
-            <TreasurePin found={t.status === 'found'} label={t.title ?? 'treasure'} />
+            <span
+              style={{
+                display: 'inline-block',
+                transform: `scale(${markerScale})`,
+                transformOrigin: 'bottom center',
+              }}
+            >
+              <TreasurePin found={t.status === 'found'} label={t.title ?? 'treasure'} />
+            </span>
           </Marker>
         ))}
 
         {/* 자녀 위치 — 파란 점 + 펄스 링 */}
         {userLocation && (
           <Marker longitude={userLocation.lng} latitude={userLocation.lat} anchor="center">
-            <span className="tq-me-dot" aria-label="me" />
+            <span
+              className="tq-me-dot"
+              aria-label="me"
+              style={{ transform: `scale(${Math.max(0.6, markerScale)})` }}
+            />
           </Marker>
         )}
 
@@ -221,7 +241,15 @@ export function GameMap({
         )}
         {pickMode && (
           <Marker longitude={center.lng} latitude={center.lat} anchor="bottom">
-            <TreasurePin found={false} label="pin" />
+            <span
+              style={{
+                display: 'inline-block',
+                transform: `scale(${markerScale})`,
+                transformOrigin: 'bottom center',
+              }}
+            >
+              <TreasurePin found={false} label="pin" />
+            </span>
           </Marker>
         )}
       </Map>
