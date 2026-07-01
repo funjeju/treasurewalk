@@ -15,21 +15,25 @@ import { circlePolygon } from '@/lib/geo/circle';
 import { Icon } from '@/components/kit';
 
 /**
- * 기본 지도 스타일 — 키 없이 쓰는 OpenStreetMap 래스터 (거리 수준 타일 O).
- * 게임 스킨(양피지 벡터, docs/05 §6)은 NEXT_PUBLIC_MAP_STYLE_URL 로 교체.
+ * 기본 지도 스타일 — 키 없이 쓰는 CARTO 다크 베이스맵 (다크 프리미엄 톤).
+ * 게임 스킨(커스텀 벡터, docs/05 §6)은 NEXT_PUBLIC_MAP_STYLE_URL 로 교체.
  */
 const OSM_STYLE: StyleSpecification = {
   version: 8,
   sources: {
-    osm: {
+    basemap: {
       type: 'raster',
-      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tiles: [
+        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+      ],
       tileSize: 256,
-      attribution: '© OpenStreetMap contributors',
-      maxzoom: 19,
+      attribution: '© OpenStreetMap © CARTO',
+      maxzoom: 20,
     },
   },
-  layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+  layers: [{ id: 'basemap', type: 'raster', source: 'basemap' }],
 };
 
 export interface GameMapProps {

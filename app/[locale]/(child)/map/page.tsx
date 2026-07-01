@@ -1,14 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { GameMapDynamic } from '@/components/map/GameMapDynamic';
 import { ProximityMeter } from '@/components/map/ProximityMeter';
-import { Hud } from '@/components/hud/Hud';
 import { StepMilestone, type Milestone } from '@/components/hud/StepMilestone';
 import { ChildSwitcher } from '@/components/child/ChildSwitcher';
+import { Avatar, Icon, Progress } from '@/components/kit';
 import { stepStatus } from '@/lib/gamification/steps';
 import { useGeolocation } from '@/lib/hooks/useGeolocation';
 import { useStepCounter } from '@/lib/hooks/useStepCounter';
@@ -29,6 +29,8 @@ export default function ChildMapPage() {
   const t = useTranslations('map');
   const tc = useTranslations('common');
   const tn = useTranslations('nav');
+  const th = useTranslations('hud');
+  const format = useFormatter();
   const router = useRouter();
   const { family, children, activeChildId, refreshFamily } = useAuth();
 
@@ -45,7 +47,6 @@ export default function ChildMapPage() {
   const {
     steps,
     active: stepsActive,
-    needsPermission,
     start: startSteps,
   } = useStepCounter(child?.id ?? null);
   // GPS 동선 — 지도에 경로 표시 + 일자별 기록 (보상엔 미사용)
@@ -156,83 +157,155 @@ export default function ChildMapPage() {
   }
 
   const mapCenter = JEJU_CENTER; // 기본은 제주도 전체
+  const st = stepStatus(steps, family?.stepGoals);
 
   return (
-    <div className="space-y-3">
+    <>
       <StepMilestone milestone={milestone} onDone={() => setMilestone(null)} />
 
-      {/* 탐험가 선택 + 동선 기록 */}
-      <div className="flex items-center justify-between gap-2">
-        <ChildSwitcher />
-        <Link href="/routes" className="g-btn g-btn-glass g-btn-sm">
-          🗺️ {tn('routes')}
-        </Link>
+      {/* 맵 우선 — 전체 지도 위에 컨트롤이 떠 있음 */}
+      <div className="fixed inset-x-0 bottom-0 top-[52px] z-0">
+        <GameMapDynamic
+          className="absolute inset-0"
+          center={mapCenter}
+          zoom={JEJU_ZOOM}
+          recenter={recenter}
+          path={path}
+          treasures={treasures}
+          userLocation={position}
+        />
+
+        {/* 상단 상태바 */}
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex items-start gap-2">
+          <div className="glass pointer-events-auto flex flex-1 items-center gap-2 rounded-2xl px-3 py-2">
+            <Avatar size={34} level={child.level}>
+              <Icon name="avatar" size={18} />
+            </Avatar>
+            <span className="min-w-0 flex-1 truncate font-extrabold">
+              {child.displayName}
+            </span>
+            <span className="inline-flex items-center gap-1 text-sm font-bold">
+              <Icon name="coin" size={15} /> {child.coins.toLocaleString()}
+            </span>
+            <span className="inline-flex items-center gap-1 text-sm font-bold">
+              <Icon name="steps" size={15} /> {steps.toLocaleString()}
+            </span>
+          </div>
+          {children.length > 1 && (
+            <div className="pointer-events-auto">
+              <ChildSwitcher />
+            </div>
+          )}
+        </div>
+
+        {locationEnabled && (
+          <div className="glass absolute left-3 top-[68px] z-10 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-extrabold text-[var(--g-green)]">
+            <span className="tq-pulse inline-block h-2 w-2 rounded-full bg-[var(--g-green)]" />
+            {t('locationActive')}
+          </div>
+        )}
+
+        {/* 좌측 플로팅 컨트롤 */}
+        <div className="absolute left-3 top-1/2 z-10 flex -translate-y-1/2 flex-col gap-2">
+          <Link
+            href="/routes"
+            aria-label={tn('routes')}
+            className="glass grid h-11 w-11 place-items-center rounded-full active:scale-95"
+          >
+            <Icon name="map" size={20} />
+          </Link>
+          {position && (
+            <button
+              type="button"
+              onClick={() => setRecenter({ ...position })}
+              aria-label="내 위치"
+              className="glass grid h-11 w-11 place-items-center rounded-full active:scale-95"
+            >
+              <Icon name="pin" size={20} />
+            </button>
+          )}
+        </div>
+
+        {/* 하단 시트 (탭바 위) */}
+        <div className="absolute inset-x-3 bottom-24 z-10 space-y-2">
+          {locationEnabled && nearest && <ProximityMeter distanceM={nearest.d} />}
+
+          {locationEnabled &&
+            (status === 'denied' || status === 'unsupported') && (
+              <p className="glass rounded-xl p-2 text-center text-xs font-bold text-[var(--g-red)]">
+                {status === 'denied' ? t('locationDenied') : t('locationUnsupported')}
+              </p>
+            )}
+
+          {/* 걸음 요약 */}
+          <div className="glass p-3">
+            <div className="flex items-center gap-3">
+              <span className="g-orb g-orb-steps g-orb-lg shrink-0">
+                <Icon name="steps" size={20} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl font-black leading-none">
+                    {steps.toLocaleString()}
+                  </span>
+                  <span className="text-xs font-bold text-[var(--g-dim)]">
+                    {tc('steps')}
+                  </span>
+                  {st.earnedAmount > 0 && (
+                    <span className="g-chip g-chip-gold ml-auto">
+                      <Icon name="coin" size={12} /> +{format.number(st.earnedAmount)}
+                      {tc('krw')}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 flex items-center gap-2">
+                  <Progress value={st.progress} className="flex-1" />
+                  <span className="shrink-0 text-[0.65rem] font-bold text-[var(--g-dim)]">
+                    {st.next
+                      ? th('nextReward', {
+                          steps: format.number(st.next.steps),
+                          amount: format.number(st.next.amount),
+                        })
+                      : th('maxGoal')}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {!stepsActive && (
+              <button
+                type="button"
+                className="g-btn g-btn-gold g-btn-sm g-btn-block mt-2"
+                onClick={startSteps}
+              >
+                <Icon name="steps" size={14} /> {th('startCounter')}
+              </button>
+            )}
+          </div>
+
+          {locationEnabled && treasures.length === 0 && (
+            <p className="glass rounded-full px-3 py-1.5 text-center text-xs text-[var(--g-dim)]">
+              {t('noTreasures')}
+            </p>
+          )}
+        </div>
+
+        {/* 위치 OFF 오버레이 */}
+        {!locationEnabled && (
+          <div className="absolute inset-0 z-20 grid place-items-center bg-black/45 p-6 backdrop-blur-sm">
+            <div className="glass max-w-xs p-6 text-center">
+              <p className="text-lg font-extrabold">🔒 {t('locationOff')}</p>
+              <p className="mt-1 text-[var(--g-dim)]">{t('locationOffHint')}</p>
+              <button
+                type="button"
+                className="g-btn g-btn-gold g-btn-block mt-4"
+                onClick={enableLocation}
+              >
+                🧭 {t('enableLocation')}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-      <Hud
-        child={child}
-        steps={steps}
-        goals={family?.stepGoals}
-        stepsActive={stepsActive}
-        needsPermission={needsPermission}
-        onStartSteps={startSteps}
-      />
-
-      {/* 위치 사용 중 인디케이터 (docs/07 A.2-1) */}
-      {locationEnabled && (
-        <div className="flex items-center gap-2 rounded-full border border-[var(--g-line)] bg-[rgba(55,213,154,0.14)] px-3 py-2 text-sm font-extrabold text-[var(--g-green)]">
-          <span className="tq-pulse inline-block h-2.5 w-2.5 rounded-full bg-[var(--g-green)]" />
-          {t('locationActive')}
-        </div>
-      )}
-
-      {/* 지도 — 게임 월드 프레임 */}
-      <div className="tq-map-frame">
-        <div className="h-[55vh] w-full">
-          <GameMapDynamic
-            center={mapCenter}
-            zoom={JEJU_ZOOM}
-            recenter={recenter}
-            path={path}
-            treasures={treasures}
-            userLocation={position}
-            onLocate={
-              position ? () => setRecenter({ ...position }) : undefined
-            }
-          />
-        </div>
-      </div>
-
-      {/* 위치 OFF 안내 */}
-      {!locationEnabled && (
-        <div className="glass p-5 text-center">
-          <p className="text-lg font-extrabold">🔒 {t('locationOff')}</p>
-          <p className="mt-1 text-[var(--g-dim)]">{t('locationOffHint')}</p>
-          <button type="button" className="g-btn g-btn-gold mt-4" onClick={enableLocation}>
-            🧭 {t('enableLocation')}
-          </button>
-        </div>
-      )}
-
-      {/* 권한 거부/미지원 */}
-      {locationEnabled && status === 'denied' && (
-        <p className="rounded-[14px] border border-[var(--g-line)] bg-[rgba(255,106,95,0.14)] p-3 text-sm font-bold text-[var(--g-red)]">
-          {t('locationDenied')}
-        </p>
-      )}
-      {locationEnabled && status === 'unsupported' && (
-        <p className="rounded-[14px] border border-[var(--g-line)] bg-[rgba(255,106,95,0.14)] p-3 text-sm font-bold text-[var(--g-red)]">
-          {t('locationUnsupported')}
-        </p>
-      )}
-
-      {/* 근접 미터 (보물찾기) */}
-      {locationEnabled && nearest && (
-        <ProximityMeter distanceM={nearest.d} />
-      )}
-
-      {locationEnabled && treasures.length === 0 && (
-        <p className="py-4 text-center text-[var(--g-dim)]">{t('noTreasures')}</p>
-      )}
-    </div>
+    </>
   );
 }
