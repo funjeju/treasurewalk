@@ -37,7 +37,10 @@
   },
   "hud": {
     "nextGoal": "Next {steps}",
+    "nextReward": "Next {steps} · +{amount}",
     "maxGoal": "Top goal reached!",
+    "goalReached": "{steps} steps reached!",
+    "goalRewardEarned": "+{amount} earned",
     "startCounter": "Start step counter",
     "counting": "Counting steps",
     "permissionDenied": "Motion sensor permission needed. Please allow it in your browser settings.",

@@ -78,30 +78,14 @@ export function Hud({
               <Progress value={st.progress} className="flex-1" />
               <span className="shrink-0 text-[0.68rem] font-bold text-[var(--g-dim)]">
                 {st.next
-                  ? `${th('nextGoal', { steps: format.number(st.next.steps) })}`
+                  ? th('nextReward', {
+                      steps: format.number(st.next.steps),
+                      amount: format.number(st.next.amount),
+                    })
                   : th('maxGoal')}
               </span>
             </div>
           </div>
-        </div>
-
-        {/* 목표별 용돈 티어 */}
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {st.goals.map((g, i) => {
-            const reached = i <= st.reachedIndex;
-            return (
-              <span
-                key={g.steps}
-                className={`g-chip ${reached ? 'g-chip-gold' : ''}`}
-                title={`${format.number(g.steps)} ${t('steps')}`}
-              >
-                {reached ? <Icon name="check" size={12} /> : `${g.steps / 1000}k`}
-                {' · '}
-                {format.number(g.amount)}
-                {t('krw')}
-              </span>
-            );
-          })}
         </div>
 
         {/* 측정 시작 (iOS 모션 권한은 사용자 제스처 필요) */}

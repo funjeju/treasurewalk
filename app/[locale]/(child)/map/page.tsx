@@ -7,7 +7,9 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { GameMapDynamic } from '@/components/map/GameMapDynamic';
 import { ProximityMeter } from '@/components/map/ProximityMeter';
 import { Hud } from '@/components/hud/Hud';
+import { StepMilestone, type Milestone } from '@/components/hud/StepMilestone';
 import { ChildSwitcher } from '@/components/child/ChildSwitcher';
+import { stepStatus } from '@/lib/gamification/steps';
 import { useGeolocation } from '@/lib/hooks/useGeolocation';
 import { useStepCounter } from '@/lib/hooks/useStepCounter';
 import { listActiveTreasures } from '@/lib/firebase/treasures';
@@ -48,6 +50,22 @@ export default function ChildMapPage() {
   const lastVibrate = useRef(0);
   // 기본 뷰는 제주도 전체. 내 위치 확대는 사용자가 📍 버튼으로.
   const [recenter, setRecenter] = useState<GeoPoint | null>(null);
+
+  // 걸음 목표 달성 축하 팝업
+  const [milestone, setMilestone] = useState<Milestone | null>(null);
+  const lastReached = useRef(-1);
+  useEffect(() => {
+    const st = stepStatus(steps, family?.stepGoals);
+    if (lastReached.current < 0) {
+      lastReached.current = st.reachedIndex; // 최초 로드 시 기준만 잡고 팝업 X
+      return;
+    }
+    if (st.reachedIndex > lastReached.current) {
+      const g = st.goals[st.reachedIndex];
+      lastReached.current = st.reachedIndex;
+      setMilestone({ steps: g.steps, amount: g.amount });
+    }
+  }, [steps, family?.stepGoals]);
 
   // active 보물 로드
   const loadTreasures = useCallback(async () => {
@@ -132,6 +150,8 @@ export default function ChildMapPage() {
 
   return (
     <div className="space-y-3">
+      <StepMilestone milestone={milestone} onDone={() => setMilestone(null)} />
+
       {/* 탐험가 선택 + HUD */}
       <div className="flex items-center justify-between gap-2">
         <ChildSwitcher />
