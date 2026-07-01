@@ -71,23 +71,35 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="space-y-3">
         <div>
           <h1 className="text-2xl font-extrabold">{t('dashboardTitle')}</h1>
           <p className="text-[var(--tq-ink-soft)]">
             {t('welcome', { name: family.name })}
           </p>
         </div>
-        <div className="ml-auto flex flex-wrap gap-2">
-          <Link href="/family" className="tq-btn tq-btn-secondary">
-            👨‍👩‍👧 {tn('family')}
-          </Link>
-          <Link href="/map" className="tq-btn tq-btn-secondary">
-            🧭 {tn('childMode')}
-          </Link>
-          <Link href="/treasure/new" className="tq-btn tq-btn-primary">
+        {/* 모바일: 보물 숨기기 전면 + 보조 2개 / 데스크톱: 우측 인라인 */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <Link
+            href="/treasure/new"
+            className="tq-btn tq-btn-primary justify-center whitespace-nowrap sm:order-last"
+          >
             ➕ {tn('hideTreasure')}
           </Link>
+          <div className="grid grid-cols-2 gap-2 sm:flex">
+            <Link
+              href="/family"
+              className="tq-btn tq-btn-secondary justify-center whitespace-nowrap"
+            >
+              👨‍👩‍👧 {tn('family')}
+            </Link>
+            <Link
+              href="/map"
+              className="tq-btn tq-btn-secondary justify-center whitespace-nowrap"
+            >
+              🧭 {tn('childMode')}
+            </Link>
+          </div>
         </div>
       </div>
 
