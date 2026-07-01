@@ -1,12 +1,10 @@
 import {
   addDoc,
   collection,
-  collectionGroup,
   doc,
   getDoc,
   getDocs,
   increment,
-  orderBy,
   query,
   serverTimestamp,
   setDoc,
@@ -174,15 +172,26 @@ export async function payClaim(
   await addActivity(familyId, 'PAID', childId, { treasureId });
 }
 
-/** 가족 전체 claim (collectionGroup). 인덱스: claims(familyId, foundAt desc). */
+/**
+ * 가족 전체 claim.
+ * collectionGroup 은 COLLECTION_GROUP 인덱스를 요구하므로 회피 →
+ * 보물별 claims 하위 컬렉션(COLLECTION 스코프, 자동 인덱스)을 순회. 인덱스 불필요.
+ * 정렬은 클라이언트에서 foundAt desc.
+ */
 export async function listClaimsForFamily(familyId: string): Promise<Claim[]> {
-  const q = query(
-    collectionGroup(db, 'claims'),
-    where('familyId', '==', familyId),
-    orderBy('foundAt', 'desc'),
+  const treasuresSnap = await getDocs(
+    collection(db, 'families', familyId, 'treasures'),
   );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => mapClaim(d.id, d.data()));
+  const all: Claim[] = [];
+  await Promise.all(
+    treasuresSnap.docs.map(async (tDoc) => {
+      const cs = await getDocs(
+        collection(db, 'families', familyId, 'treasures', tDoc.id, 'claims'),
+      );
+      cs.forEach((c) => all.push(mapClaim(c.id, c.data())));
+    }),
+  );
+  return all.sort((a, b) => b.foundAt - a.foundAt);
 }
 
 /** 특정 자녀의 해당 보물 claim (발견 연출 페이지에서 사용). */
