@@ -6,14 +6,9 @@ import { Link } from '@/lib/i18n/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { TreasureReveal } from '@/components/discover/TreasureReveal';
 import { getTreasure } from '@/lib/firebase/treasures';
-import {
-  getChildClaim,
-  requestClaim,
-  uploadCertificate,
-} from '@/lib/firebase/claims';
-import { generateCertificate, shareCertificate } from '@/lib/certificate';
 import { COIN_PER_FIND } from '@/lib/gamification/economy';
-import type { Claim, Treasure } from '@/lib/types';
+import { Icon } from '@/components/kit';
+import type { Treasure } from '@/lib/types';
 
 export default function DiscoverPage({
   params,
@@ -23,32 +18,16 @@ export default function DiscoverPage({
   const { treasureId } = use(params);
   const t = useTranslations('discover');
   const tc = useTranslations('common');
-  const tcert = useTranslations('certificate');
   const format = useFormatter();
-  const { family, children, activeChildId } = useAuth();
-  const child = children.find((c) => c.id === activeChildId) ?? null;
+  const { family } = useAuth();
 
   const [treasure, setTreasure] = useState<Treasure | null>(null);
-  const [claim, setClaim] = useState<Claim | null>(null);
   const [opened, setOpened] = useState(false);
-  const [requesting, setRequesting] = useState(false);
-  const [requested, setRequested] = useState(false);
 
   useEffect(() => {
     if (!family) return;
     getTreasure(family.id, treasureId).then(setTreasure).catch(console.error);
-    if (child) {
-      getChildClaim(family.id, treasureId, child.id)
-        .then((c) => {
-          setClaim(c);
-          if (c?.status === 'REQUESTED' || c?.status === 'PAID') {
-            setOpened(true);
-            setRequested(true);
-          }
-        })
-        .catch(console.error);
-    }
-  }, [family, treasureId, child]);
+  }, [family, treasureId]);
 
   function handleOpen() {
     if (opened) return;
@@ -56,71 +35,24 @@ export default function DiscoverPage({
     navigator.vibrate?.([40, 30, 80, 30, 160]); // 팡파르 햅틱
   }
 
-  async function handleRequest() {
-    if (!family || !child || !treasure || !claim) return;
-    setRequesting(true);
-    try {
-      const foundDate = new Date(claim.foundAt);
-      const blob = await generateCertificate({
-        titleLabel: tcert('title'),
-        explorerLabel: tcert('explorer'),
-        explorerName: child.displayName,
-        foundAtLabel: tcert('foundAt'),
-        foundAt: foundDate.toLocaleString(),
-        stepsLabel: tcert('steps'),
-        steps: claim.stepsToday ?? 0,
-        amountLabel: tcert('amount'),
-        amount: `${format.number(treasure.reward.amount)} ${tc('krw')}`,
-        idLabel: tcert('id'),
-        discoveryId: claim.id.slice(0, 8).toUpperCase(),
-      });
-
-      let certUrl: string | null = null;
-      try {
-        certUrl = await uploadCertificate(family.id, blob);
-      } catch (e) {
-        console.error('certificate upload failed', e);
-      }
-
-      await requestClaim(family.id, treasure.id, claim.id, certUrl);
-      setRequested(true);
-
-      // 가족에 공유 (KAKAO_SHARE)
-      await shareCertificate(
-        blob,
-        t('shareText', {
-          name: child.displayName,
-          amount: format.number(treasure.reward.amount),
-          currency: tc('krw'),
-        }),
-      );
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setRequesting(false);
-    }
-  }
-
   return (
     <div className="grid min-h-[70vh] place-items-center">
       <div className="relative w-full max-w-md text-center">
         <h1
-          className={`text-3xl font-extrabold text-[var(--tq-gold-deep)] tq-glow ${
+          className={`text-3xl font-black text-[var(--g-gold)] tq-glow ${
             opened ? 'tq-pop' : ''
           }`}
         >
           {t('found')}
         </h1>
-        {treasure?.title && (
-          <p className="mt-1 text-[var(--tq-ink-soft)]">{treasure.title}</p>
-        )}
+        {treasure?.title && <p className="mt-1 text-[var(--g-dim)]">{treasure.title}</p>}
 
         <div className="my-2">
           <TreasureReveal opened={opened} onOpen={handleOpen} />
         </div>
 
         {!opened && (
-          <p className="animate-pulse font-bold text-[var(--tq-gold-deep)]">
+          <p className="animate-pulse font-bold text-[var(--g-gold)]">
             👆 {t('tapToOpen')}
           </p>
         )}
@@ -133,22 +65,17 @@ export default function DiscoverPage({
               })}
             </p>
             <p className="g-chip g-chip-gold mt-1 text-sm">
-              🪙 {t('coinsEarned', { coins: COIN_PER_FIND })}
+              <Icon name="coin" size={13} /> {t('coinsEarned', { coins: COIN_PER_FIND })}
             </p>
 
-            <div className="mt-6 flex flex-col gap-2">
-              {!requested ? (
-                <button
-                  type="button"
-                  className="g-btn g-btn-gold"
-                  onClick={handleRequest}
-                  disabled={requesting || !claim}
-                >
-                  {requesting ? t('requesting') : `🧾 ${t('requestAllowance')}`}
-                </button>
-              ) : (
-                <p className="font-extrabold text-[var(--g-green)]">✓ {t('requested')}</p>
-              )}
+            <p className="mt-3 flex items-center justify-center gap-1 font-bold text-[var(--g-green)]">
+              <Icon name="bag" size={16} /> {t('addedToWallet')}
+            </p>
+
+            <div className="mt-5 flex flex-col gap-2">
+              <Link href="/wallet" className="g-btn g-btn-gold">
+                <Icon name="bag" size={18} /> {t('viewWallet')}
+              </Link>
               <Link href="/map" className="g-btn g-btn-glass">
                 {t('backToMap')}
               </Link>

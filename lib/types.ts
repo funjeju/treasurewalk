@@ -46,7 +46,28 @@ export interface Child {
   locationEnabled: boolean;
   /** 부모 법정대리인 동의 (docs/07 A.3) */
   guardianConsent: boolean;
+  /** 오늘 이미 청구한 걸음 용돈 (중복 방지). */
+  stepRewardClaimedDate?: string; // YYYY-MM-DD
+  stepRewardClaimedAmount?: number;
   createdAt: number;
+}
+
+export type AllowanceStatus = 'REQUESTED' | 'PAID';
+
+/** families/{familyId}/allowanceRequests/{id} — 보물+걸음 용돈 합산 청구 */
+export interface AllowanceRequest {
+  id: string;
+  childId: string;
+  /** 포함된 보물 claim 참조 (지급 시 PAID 처리용) */
+  claimRefs: { treasureId: string; claimId: string }[];
+  treasureAmount: number;
+  stepAmount: number;
+  stepsAtRequest: number;
+  total: number;
+  currency: string;
+  status: AllowanceStatus;
+  createdAt: number;
+  paidAt?: number | null;
 }
 
 export type RewardType = 'FIXED' | 'DISTANCE_SCALED' | 'STREAK_BONUS';

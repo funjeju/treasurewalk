@@ -6,8 +6,8 @@ import { Link } from '@/lib/i18n/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Onboarding } from '@/components/onboarding/Onboarding';
 import { listTreasures, deleteTreasure } from '@/lib/firebase/treasures';
-import { listClaimsForFamily, payClaim } from '@/lib/firebase/claims';
-import type { Child, Claim, Treasure } from '@/lib/types';
+import { listAllowanceRequests, payAllowance } from '@/lib/firebase/allowance';
+import type { AllowanceRequest, Child, Treasure } from '@/lib/types';
 
 export default function DashboardPage() {
   const t = useTranslations('parent');
@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const { family, children, loading } = useAuth();
 
   const [treasures, setTreasures] = useState<Treasure[]>([]);
-  const [claims, setClaims] = useState<Claim[]>([]);
+  const [requests, setRequests] = useState<AllowanceRequest[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
 
   const childById = (id: string): Child | undefined =>
@@ -27,12 +27,12 @@ export default function DashboardPage() {
     if (!family) return;
     setDataLoading(true);
     try {
-      const [tr, cl] = await Promise.all([
+      const [tr, rq] = await Promise.all([
         listTreasures(family.id),
-        listClaimsForFamily(family.id),
+        listAllowanceRequests(family.id),
       ]);
       setTreasures(tr);
-      setClaims(cl);
+      setRequests(rq);
     } catch (e) {
       console.error(e);
     } finally {
@@ -56,9 +56,9 @@ export default function DashboardPage() {
   const activeTreasures = treasures.filter((t) => t.status === 'active');
   const foundTreasures = treasures.filter((t) => t.status === 'found');
 
-  async function handlePay(claim: Claim) {
+  async function handlePay(req: AllowanceRequest) {
     if (!family) return;
-    await payClaim(family.id, claim.treasureId, claim.id, claim.childId);
+    await payAllowance(family.id, req);
     await load();
   }
 
@@ -103,74 +103,49 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 발견 · 요청 현황 */}
+      {/* 용돈 요청 (보물+걸음 합산) */}
       <section className="tq-panel p-5">
-        <h2 className="mb-3 text-lg font-bold">{t('claims')}</h2>
-        {claims.length === 0 ? (
-          <p className="text-[var(--tq-ink-soft)]">{t('noClaims')}</p>
+        <h2 className="mb-3 text-lg font-bold">💰 {t('allowanceRequests')}</h2>
+        {requests.filter((r) => r.status === 'REQUESTED').length === 0 ? (
+          <p className="text-[var(--tq-ink-soft)]">{t('noRequests')}</p>
         ) : (
           <ul className="space-y-2">
-            {claims.map((claim) => {
-              const child = childById(claim.childId);
-              const treasure = treasures.find((tr) => tr.id === claim.treasureId);
-              const statusLabel =
-                claim.status === 'PAID'
-                  ? t('statusPaid')
-                  : claim.status === 'REQUESTED'
-                    ? t('statusRequested')
-                    : t('statusFound');
-              return (
-                <li
-                  key={claim.id}
-                  className="flex flex-wrap items-center gap-3 rounded-[14px] border border-[var(--tq-border)] bg-[var(--tq-surface-2)] p-3"
-                >
-                  <span className="font-bold">
-                    {child?.displayName ?? '—'}
-                  </span>
-                  <span className="text-sm text-[var(--tq-ink-soft)]">
-                    {treasure?.title || treasure?.id?.slice(0, 6) || '—'}
-                  </span>
-                  {treasure && (
-                    <span className="tq-pill text-sm">
-                      🪙{' '}
-                      {format.number(treasure.reward.amount)} {tc('krw')}
-                    </span>
-                  )}
-                  <span
-                    className={`tq-pill text-sm ${
-                      claim.status === 'PAID'
-                        ? 'text-[var(--tq-jewel)]'
-                        : claim.status === 'REQUESTED'
-                          ? 'text-[var(--tq-ruby)]'
-                          : ''
-                    }`}
+            {requests
+              .filter((r) => r.status === 'REQUESTED')
+              .map((req) => {
+                const child = childById(req.childId);
+                return (
+                  <li
+                    key={req.id}
+                    className="rounded-[14px] border border-[var(--tq-gold)] bg-[var(--tq-surface-2)] p-3"
                   >
-                    {statusLabel}
-                  </span>
-                  <div className="ml-auto flex items-center gap-2">
-                    {claim.certificateUrl && (
-                      <a
-                        href={claim.certificateUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="tq-btn tq-btn-ghost text-sm"
-                      >
-                        🧾 {t('viewCertificate')}
-                      </a>
-                    )}
-                    {claim.status === 'REQUESTED' && (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="font-bold">{child?.displayName ?? '—'}</span>
+                      <span className="tq-pill text-base font-extrabold">
+                        🪙 {format.number(req.total)} {tc('krw')}
+                      </span>
                       <button
                         type="button"
-                        className="tq-btn tq-btn-primary text-sm"
-                        onClick={() => handlePay(claim)}
+                        className="tq-btn tq-btn-primary ml-auto text-sm"
+                        onClick={() => handlePay(req)}
                       >
                         {t('markPaid')}
                       </button>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
+                    </div>
+                    <p className="mt-2 text-xs text-[var(--tq-ink-soft)]">
+                      🎁 {t('reward')} {format.number(req.treasureAmount)}
+                      {tc('krw')}
+                      {req.stepAmount > 0 && (
+                        <>
+                          {' · '}👟 {format.number(req.stepsAtRequest)} {tc('steps')}{' '}
+                          {format.number(req.stepAmount)}
+                          {tc('krw')}
+                        </>
+                      )}
+                    </p>
+                  </li>
+                );
+              })}
           </ul>
         )}
       </section>

@@ -11,6 +11,7 @@ export function BottomNav() {
 
   const items: { href: string; ico: IconName; label: string }[] = [
     { href: '/map', ico: 'compass', label: t('map') },
+    { href: '/wallet', ico: 'bag', label: t('wallet') },
     { href: '/collection', ico: 'book', label: t('collection') },
     { href: '/dashboard', ico: 'home', label: t('parentMode') },
   ];
